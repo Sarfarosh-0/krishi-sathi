@@ -261,7 +261,7 @@ deploy name availability → have a fallback name ready.
 | Phase | Status | Completed on | Notes |
 |---|---|---|---|
 | 1 Setup & config | ✅ done | 2026-10-15 | Next 16.4.1 + TS + Tailwind 4 + Turbopack (generator defaults); `@google/genai` 2.30.0 + `lucide-react` 1.57.0 pinned in lockfile; Inter + Noto Sans Devanagari + §2 tokens; `lib/types.ts` verified byte-identical to DESIGN §4; dev/build/lint green |
-| 2 Data layer (KB/retrieval/tests) | ⬜ not started | — | |
+| 2 Data layer (KB/retrieval/tests) | ✅ done | 2026-10-15 | 14 bilingual chunks (all 5 crops + neem-safety + pre-rain + out-of-scope) — every chunk 80–150 words in both languages, `लक्षण/उपाय/सावधानी` structure, source line embedded in the text; `lib/synonyms.ts` (36 groups incl. Roman transliterations); `lib/kb.ts` module-scope-cached JSON loader; `lib/retrieval.ts` pure scorer (crop 3 > tag 2 > token 1, threshold 5); `npm run test` = `node --test`; **11/11 tests, 15/15 evals, 3/3 refusals**; build + lint green; bundled-KB import proven (prerender executed `getChunks()` → 14) |
 | 3 Backend `/api/ask` | ⬜ not started | — | needs B1 |
 | 4 Chat UI | ⬜ not started | — | |
 | 5 Dashboard & history | ⬜ not started | — | |
@@ -273,6 +273,7 @@ Legend: ⬜ not started · 🔄 in progress · ✅ done (criteria verified) · �
 ## Log
 
 - 2026-10-15 · Phase 1 · Scaffolded Next.js 16.4.1 (App Router, TS, Tailwind 4, Turbopack) in place, installed `@google/genai` 2.30.0 + `lucide-react` 1.57.0, wired Inter + Noto Sans Devanagari and the DESIGN §2 design tokens, added `.env.example`, `app/manifest.ts` and the DESIGN §4 shared types · Learned: Next 16 removed `next lint` (ESLint CLI now; `next build` no longer lints) and the scaffold's `.env*` ignore rule also swallowed the required `.env.example`, so a `!.env.example` exception was needed.
+- 2026-10-15 · Phase 2 · Authored the 14-chunk sample KB (human-approved: clearly-labelled KVK-style sample guidance, no brand names or invented dosages), `lib/synonyms.ts`, cached `lib/kb.ts`, pure `lib/retrieval.ts`, `evals/evals.json` and the `node:test` retrieval suite; tuned weights/threshold until 15/15 evals and 3/3 refusals passed · Learned: (1) Node 24 strips TS types natively but its ESM resolver still rejects extensionless imports, so `node --test` runs the real `.ts` modules via a ~20-line resolve hook — no new dependency, app code stays idiomatic; (2) `लक्षण / उपाय / सावधानी` appear in *every* chunk, so those labels (and general question words) must be filtered from the expanded token set or every score inflates; (3) the `out_of_scope` chunk must be excluded from retrieval candidates, otherwise "मछली पालन की लागत" would be *answered* from the referral doc instead of hitting the refusal path.
 
 ## Blockers
 

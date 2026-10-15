@@ -222,9 +222,13 @@ Response: `200 { "ok": true }`. No auth, no side effects, no Gemini call.
 | Rate limited (10 req/min/IP, in-memory, **best-effort per serverless instance** — not global) | 429 | `AskErrorBody` (`rate_limit`) |
 
 Rules: client never sees Gemini errors verbatim (only `"upstream"`); the refusal
-threshold check runs **before** any Gemini call; server-side rate limiting is
-per-instance and approximate by design (no Redis — see AGENTS #11); advisory
-text lives only in server code, never in the model prompt output.
+threshold check runs **before** any Gemini call; the scope-documentation chunk
+(`out_of_scope` tag in `kb/crop-docs.json`) is excluded from retrieval
+candidates, so the topics it lists — prices, schemes, loans, weather — always
+fall to the deterministic refusal path instead of being answered; server-side
+rate limiting is per-instance and approximate by design (no Redis — see
+AGENTS #11); advisory text lives only in server code, never in the model prompt
+output.
 
 Localized server strings (`lang: "hi" | "en"`):
 

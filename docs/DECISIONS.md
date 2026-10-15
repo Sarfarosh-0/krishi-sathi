@@ -72,6 +72,13 @@ optional stretch and is **not** promised.
 - **Scoring:** crop match (strongest) > tags > token overlap;
   **synonym table** (`lib/synonyms.ts`, 30–50 lines, e.g. "पीली इल्टी" =
   "yellow stem borer" = "borer") expands queries before scoring.
+- **Calibrated weights (locked in Phase 2, after 15/15 eval pass):** crop `3`;
+  each distinct tag hit `2` (max 2 hits); each distinct token-overlap hit `1`
+  (max 4 hits); **threshold `5`** — below it the refusal path runs. Queries are
+  lower-cased and reduced to Devanagari + ASCII alphanumerics; question words and
+  the structural labels `लक्षण / उपाय / सावधानी` are removed *after* expansion, so
+  boilerplate present in every chunk can never inflate a score. Chunks tagged
+  `out_of_scope` are excluded from candidates (DESIGN §5).
 - **Structure convention:** `लक्षण / उपाय / सावधानी` inside each chunk so answers
   are consistent and scannable; source line embedded in the text so citations
   cannot drift.

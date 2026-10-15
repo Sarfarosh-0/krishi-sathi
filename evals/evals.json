@@ -1,0 +1,126 @@
+{
+  "meta": {
+    "note": "Retrieval-only eval set (PRD §7, DECISIONS §4). No Gemini quota is used: every case asserts which chunk retrieval puts first. `expect` is a chunk id from kb/crop-docs.json.",
+    "passTarget": "12 of 15"
+  },
+  "cases": [
+    {
+      "id": "e01",
+      "q": "गेहूँ में पीली इल्टी का इलाज क्या है?",
+      "lang": "hi",
+      "expect": "wheat_pest_yellow_stem_borer",
+      "chip": "wheat yellow stem borer"
+    },
+    {
+      "id": "e02",
+      "q": "wheat me yellow stem borer ka control kaise kare",
+      "lang": "en",
+      "expect": "wheat_pest_yellow_stem_borer",
+      "note": "mixed Roman-Hindi + English"
+    },
+    {
+      "id": "e03",
+      "q": "गेहूँ में पीला रतुआ लगा है, क्या करें?",
+      "lang": "hi",
+      "expect": "wheat_disease_rust",
+      "chip": "wheat rust"
+    },
+    {
+      "id": "e04",
+      "q": "गेहूँ में खाद कब डालें?",
+      "lang": "hi",
+      "expect": "wheat_fertiliser_timing"
+    },
+    {
+      "id": "e05",
+      "q": "गेहूँ की पहली सिंचाई कब करनी चाहिए?",
+      "lang": "hi",
+      "expect": "wheat_irrigation_first"
+    },
+    {
+      "id": "e06",
+      "q": "धान में सिंचाई कब-कब करनी चाहिए?",
+      "lang": "hi",
+      "expect": "paddy_irrigation_stages",
+      "chip": "paddy irrigation"
+    },
+    {
+      "id": "e07",
+      "q": "paddy irrigation stages during flowering",
+      "lang": "en",
+      "expect": "paddy_irrigation_stages"
+    },
+    {
+      "id": "e08",
+      "q": "धान में तना छेदक का इलाज",
+      "lang": "hi",
+      "expect": "paddy_pest_stem_borer"
+    },
+    {
+      "id": "e09",
+      "q": "सरसों में खाद कब डालें?",
+      "lang": "hi",
+      "expect": "mustard_fertiliser_timing",
+      "chip": "mustard fertiliser timing"
+    },
+    {
+      "id": "e10",
+      "q": "सरसों में माहू कीट का इलाज",
+      "lang": "hi",
+      "expect": "mustard_pest_aphid"
+    },
+    {
+      "id": "e11",
+      "q": "प्याज की बुवाई कब करें?",
+      "lang": "hi",
+      "expect": "onion_sowing_transplant",
+      "chip": "onion sowing"
+    },
+    {
+      "id": "e12",
+      "q": "प्याज में थ्रिप्स कीट का नियंत्रण",
+      "lang": "hi",
+      "expect": "onion_pest_thrips"
+    },
+    {
+      "id": "e13",
+      "q": "मसूर की बुवाई का समय क्या है?",
+      "lang": "hi",
+      "expect": "lentil_sowing_window"
+    },
+    {
+      "id": "e14",
+      "q": "नीम के छिड़काव में क्या सावधानी रखें?",
+      "lang": "hi",
+      "expect": "spray_safety_neem",
+      "chip": "neem spray safety"
+    },
+    {
+      "id": "e15",
+      "q": "बारिश से पहले खेत में क्या करें?",
+      "lang": "hi",
+      "expect": "pre_rain_actions",
+      "chip": "pre-rain actions"
+    }
+  ],
+  "refusals": [
+    {
+      "id": "r01",
+      "q": "मछली पालन की लागत कितनी होती है?",
+      "lang": "hi",
+      "note": "Demo chip #8 — deliberately out of KB (fish farming)."
+    },
+    {
+      "id": "r02",
+      "q": "पीएम किसान सम्मान निधि योजना की जानकारी दो",
+      "lang": "hi",
+      "note": "Government schemes are a PRD non-goal."
+    },
+    {
+      "id": "r03",
+      "q": "बैंक से कृषि लोन कैसे मिलेगा?",
+      "lang": "hi",
+      "note": "Loans/credit are a PRD non-goal."
+    }
+  ]
+}

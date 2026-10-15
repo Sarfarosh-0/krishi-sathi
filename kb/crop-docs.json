@@ -1,0 +1,313 @@
+{
+  "meta": {
+    "name": "कृषि साथी नमूना ज्ञान-कोश / Krishi Sathi sample knowledge base",
+    "region": "लखनऊ, उत्तर प्रदेश / Lucknow, Uttar Pradesh",
+    "note": "यह नमूना सामान्य कृषि सलाह है — किसी सरकारी संस्था (KVK/ICAR) का दस्तावेज़ नहीं। Sample guidance only, not an official document."
+  },
+  "chunks": [
+    {
+      "id": "wheat_pest_yellow_stem_borer",
+      "title": "गेहूँ में पीली इल्टी (तना छेदक)",
+      "titleEn": "Yellow stem borer in wheat",
+      "crop": ["wheat"],
+      "season": "rabi",
+      "tags": [
+        "पीली इल्टी",
+        "इल्टी",
+        "पीला तना छेदक",
+        "तना छेदक",
+        "yellow stem borer",
+        "stem borer",
+        "borer",
+        "कीट",
+        "pest",
+        "सुंडी"
+      ],
+      "text": "लक्षण: गेहूँ की पत्तियों और तनों पर छोटे छेद दिखते हैं और सूखी पत्तियों के बीच पीली-भूरी सुंडियाँ रहती हैं। ज्यादा हमले में तने बीच से टूट जाते हैं और बालियाँ सफेद पड़ जाती हैं।\n\nउपाय: प्रभावित तने और पत्तियाँ तोड़कर खेत से बाहर नष्ट करें। नीम तेल का छिड़काव शाम के समय करें। खेत के किनारे प्रकाश जाल या फेरोमोन जाल लगाएँ। संतुलित खाद दें और अत्यधिक यूरिया से बचें।\n\nसावधानी: किसी भी दवा का छिड़काव करने से पहले स्थानीय कृषि विशेषज्ञ से सलाह लें और दवा के लेबल पर लिखी मात्रा ही इस्तेमाल करें। छिड़काव के समय मास्क, पूरी आस्तीन के कपड़े और दस्ताने पहनें।\n\nस्रोत: KS-नमूना-01 · गेहूँ: पीली इल्टी प्रबंधन।",
+      "textEn": "Symptoms: wheat leaves and stems show small bore holes, and pale yellow-brown larvae sit inside dried leaf sheaths. In heavy attack the stems break and the ears turn white.\n\nRemedy: remove and destroy affected tillers outside the field. Spray neem oil in the evening. Place light traps or pheromone traps at the field edges. Apply balanced fertiliser and avoid excess urea.\n\nCaution: before spraying any chemical, consult your local agriculture expert and use only the dose printed on the product label. Wear a mask, full-sleeve clothing and gloves while spraying.\n\nSource: KS-sample-01 · Wheat: yellow stem borer management.",
+      "source": "KS-नमूना-01 · गेहूँ: पीली इल्टी (KS-sample-01 · Wheat: yellow stem borer)",
+      "priority": 9
+    },
+    {
+      "id": "wheat_disease_rust",
+      "title": "गेहूँ में रतुआ रोग (पीला, भूरा, नीला रतुआ)",
+      "titleEn": "Rust disease in wheat (yellow, brown, blue rust)",
+      "crop": ["wheat"],
+      "season": "rabi",
+      "tags": [
+        "रतुआ",
+        "पीला रतुआ",
+        "भूरा रतुआ",
+        "नीला रतुआ",
+        "रतुआ रोग",
+        "rust",
+        "yellow rust",
+        "brown rust",
+        "blue rust",
+        "रोग",
+        "disease"
+      ],
+      "text": "लक्षण: पत्तियों पर पीले, भूरे या नारंगी रंग की धारीदार या गोल फुंसियाँ बनती हैं, जिन्हें छूने पर पाउडर जैसा पदार्थ हाथ पर लग जाता है। शुरुआत नीचे की पत्तियों से होती है और ठंडा, नम मौसम रोग को तेजी से फैलाता है।\n\nउपाय: रोग-रोधी किस्मों की बुवाई करें और समय पर बीज उपचार करें। संक्रमित पत्तियाँ हटाएँ और खेत में यूरिया की ज्यादा मात्रा न डालें। रोग दिखते ही स्थानीय कृषि विशेषज्ञ से अनुशंसित उपचार जल्दी शुरू कराएँ।\n\nसावधानी: छिड़काव शाम को करें और हवा तेज होने पर न करें। दवा मिलाते और छिड़कते समय दस्ताने और मास्क पहनें।\n\nस्रोत: KS-नमूना-02 · गेहूँ: रतुआ रोग प्रबंधन।",
+      "textEn": "Symptoms: leaves develop yellow, brown or orange pustules in stripes or spots, and a powder rubs onto your hand when touched. It usually starts on the lower leaves, and cool, damp weather spreads it fast.\n\nRemedy: sow rust-resistant varieties and treat the seed on time. Remove infected leaves and avoid heavy urea. As soon as symptoms appear, ask your local agriculture expert to start the recommended treatment early.\n\nCaution: spray in the evening, never in strong wind. Wear gloves and a mask while mixing and spraying.\n\nSource: KS-sample-02 · Wheat: rust disease management.",
+      "source": "KS-नमूना-02 · गेहूँ: रतुआ (KS-sample-02 · Wheat: rust)",
+      "priority": 8
+    },
+    {
+      "id": "wheat_fertiliser_timing",
+      "title": "गेहूँ में खाद देने का समय",
+      "titleEn": "Fertiliser timing in wheat",
+      "crop": ["wheat"],
+      "season": "rabi",
+      "tags": [
+        "खाद",
+        "उर्वरक",
+        "fertiliser",
+        "fertilizer",
+        "यूरिया",
+        "urea",
+        "नाइट्रोजन",
+        "nitrogen",
+        "ताज जड़",
+        "crown root initiation",
+        "cri",
+        "top dressing"
+      ],
+      "text": "लक्षण: खाद का समय चूकने पर पौधे पीले पड़ जाते हैं, बढ़वार रुक जाती है और बालियाँ छोटी रह जाती हैं। जमीन में नमी कम हो तो खाद का असर भी कम मिलता है।\n\nउपाय: बुआई के समय जमीन तैयार करते हुए खाद दें। बाकी नाइट्रोजन दो बार में बाँटें — पहला भाग ताज जड़ अवस्था यानी पहली सिंचाई के समय और दूसरा भाग कल्ले बनते समय। हर बार खाद सिंचाई से ठीक पहले डालें ताकि वह जड़ों तक पहुँचे।\n\nसावधानी: अपने खेत की मिट्टी जाँच के आधार पर मात्रा तय करें; अंधाधुंध यूरिया न डालें।\n\nस्रोत: KS-नमूना-03 · गेहूँ: खाद प्रबंधन।",
+      "textEn": "Symptoms: when fertiliser timing is missed, plants turn pale, growth stops and ears stay small. If the soil is dry, the fertiliser also works poorly.\n\nRemedy: apply the basal dose while preparing the field at sowing. Split the remaining nitrogen into two parts — the first at crown root initiation, which is the first irrigation, and the second at tillering. Always apply just before irrigation so it reaches the roots.\n\nCaution: decide the amount from your own soil test report; do not apply urea blindly.\n\nSource: KS-sample-03 · Wheat: fertiliser management.",
+      "source": "KS-नमूना-03 · गेहूँ: खाद (KS-sample-03 · Wheat: fertiliser)",
+      "priority": 8
+    },
+    {
+      "id": "wheat_irrigation_first",
+      "title": "गेहूँ की पहली सिंचाई",
+      "titleEn": "First irrigation in wheat",
+      "crop": ["wheat"],
+      "season": "rabi",
+      "tags": [
+        "सिंचाई",
+        "पानी",
+        "irrigation",
+        "watering",
+        "पहली सिंचाई",
+        "first irrigation",
+        "ताज जड़",
+        "crown root initiation",
+        "cri"
+      ],
+      "text": "लक्षण: सिंचाई देर से होने पर पत्तियाँ मुड़ने लगती हैं, नीचे की पत्तियाँ सूखने लगती हैं और कल्ले कम बनते हैं। सूखी जमीन में पौधे छोटे रह जाते हैं।\n\nउपाय: गेहूँ में पहली सिंचाई ताज जड़ अवस्था यानी बुआई के लगभग तीन से चार सप्ताह बाद करें; यह सबसे जरूरी सिंचाई मानी जाती है। इसके बाद कल्ले बनने, बाली निकलने और दाना भरने के समय पानी दें। हल्की मिट्टी में सिंचाई जल्दी और भारी मिट्टी में थोड़ी देर से करें।\n\nसावधानी: पानी भरने से बचें; ज्यादा पानी जड़ों को नुकसान पहुँचाता है।\n\nस्रोत: KS-नमूना-04 · गेहूँ: सिंचाई प्रबंधन।",
+      "textEn": "Symptoms: if irrigation is late, leaves start curling, the lower leaves dry and fewer tillers form. Plants stay stunted in dry soil.\n\nRemedy: give wheat its first irrigation at crown root initiation, about three to four weeks after sowing; this is considered the most important irrigation. After that, water at tillering, at ear emergence and at grain filling. Irrigate a little earlier on light soil and a little later on heavy soil.\n\nCaution: avoid waterlogging; too much water damages the roots.\n\nSource: KS-sample-04 · Wheat: irrigation management.",
+      "source": "KS-नमूना-04 · गेहूँ: सिंचाई (KS-sample-04 · Wheat: irrigation)",
+      "priority": 7
+    },
+    {
+      "id": "paddy_irrigation_stages",
+      "title": "धान में सिंचाई की अवस्थाएँ",
+      "titleEn": "Irrigation stages in paddy",
+      "crop": ["paddy"],
+      "season": "kharif",
+      "tags": [
+        "सिंचाई",
+        "पानी",
+        "irrigation",
+        "watering",
+        "अवस्था",
+        "stage",
+        "standing crop",
+        "खड़ी फसल"
+      ],
+      "text": "लक्षण: पानी कम पड़ने पर धान की पत्तियाँ पीली पड़कर सूखने लगती हैं और कल्ले कम बनते हैं। ज्यादा पानी रुकने पर जड़ें सड़ने लगती हैं और पौधे झुक जाते हैं।\n\nउपाय: रोपाई के बाद शुरुआत में खेत में उथला पानी बनाए रखें। कल्ले बनते समय, बाली बनते समय और दूधिया दाना बनते समय पानी की सबसे ज्यादा जरूरत होती है; इन अवस्थाओं में खेत सूखने न दें। कटाई से पहले खेत से पानी निकाल दें।\n\nसावधानी: एक ही बार में बहुत गहरा पानी न भरें, और निकास की व्यवस्था बनाए रखें।\n\nस्रोत: KS-नमूना-05 · धान: सिंचाई अवस्थाएँ।",
+      "textEn": "Symptoms: with too little water, paddy leaves turn pale and dry and fewer tillers form. With standing excess water, roots start rotting and plants lodge.\n\nRemedy: keep shallow water in the field after transplanting. Water demand is highest at tillering, at panicle initiation and at the milky grain stage; do not let the field dry at these stages. Drain the field before harvest.\n\nCaution: do not flood the field deeply in one go, and keep drainage arrangements ready.\n\nSource: KS-sample-05 · Paddy: irrigation stages.",
+      "source": "KS-नमूना-05 · धान: सिंचाई (KS-sample-05 · Paddy: irrigation)",
+      "priority": 7
+    },
+    {
+      "id": "paddy_pest_stem_borer",
+      "title": "धान में तना छेदक (इल्टी)",
+      "titleEn": "Stem borer in paddy",
+      "crop": ["paddy"],
+      "season": "kharif",
+      "tags": [
+        "तना छेदक",
+        "इल्टी",
+        "stem borer",
+        "borer",
+        "कीट",
+        "pest",
+        "dead heart",
+        "डेड हार्ट",
+        "white ear",
+        "सफेद बाली"
+      ],
+      "text": "लक्षण: छोटे पौधों के बीच का हिस्सा सूखकर सूखी नली जैसा दिखने लगता है; इसे डेड हार्ट कहते हैं। पौधे बड़े होने पर बाली सफेद और खाली रह जाती है। तने को चीरने पर अंदर सुंडी दिखती है।\n\nउपाय: खेत के किनारे फेरोमोन जाल और प्रकाश जाल लगाएँ। रोपाई में स्वस्थ पौध रखें और ज्यादा यूरिया न दें। डेड हार्ट वाले पौधे हटाकर नष्ट करें। अंडे के गुच्छे दिखने पर नीम तेल का छिड़काव करें।\n\nसावधानी: कीटनाशक तभी इस्तेमाल करें जब नुकसान दिखाई दे; छिड़काव में मास्क और दस्ताने पहनें।\n\nस्रोत: KS-नमूना-06 · धान: तना छेदक।",
+      "textEn": "Symptoms: the central shoot of young plants dries into a hollow tube — called dead heart. In older plants the ear stays white and empty. Splitting the stem shows the larva inside.\n\nRemedy: place pheromone and light traps at the field edges. Transplant healthy seedlings and avoid too much urea. Remove and destroy dead-heart plants. Spray neem oil when egg masses are seen.\n\nCaution: use insecticide only when damage is visible; wear a mask and gloves while spraying.\n\nSource: KS-sample-06 · Paddy: stem borer.",
+      "source": "KS-नमूना-06 · धान: तना छेदक (KS-sample-06 · Paddy: stem borer)",
+      "priority": 8
+    },
+    {
+      "id": "mustard_fertiliser_timing",
+      "title": "सरसों में खाद देने का समय",
+      "titleEn": "Fertiliser timing in mustard",
+      "crop": ["mustard"],
+      "season": "rabi",
+      "tags": [
+        "खाद",
+        "उर्वरक",
+        "fertiliser",
+        "fertilizer",
+        "यूरिया",
+        "urea",
+        "नाइट्रोजन",
+        "nitrogen",
+        "top dressing"
+      ],
+      "text": "लक्षण: खाद कम या समय पर न मिलने पर पौधे पीले पड़ जाते हैं, शाखाएँ कम बनती हैं और फली भी छोटी रह जाती है। ज्यादा यूरिया देने से पत्तियाँ बढ़ती हैं पर फूल और फली कम आती है।\n\nउपाय: खाद की पूरी मात्रा में से आधा भाग बुआई के समय और आधा भाग बुआई के लगभग तीस दिन बाद दें, जब पौधे शाखाएँ बना रहे हों। शाखा बनने की शुरुआत में हल्की सिंचाई के साथ खाद देना सरसों के लिए सबसे फायदेमंद माना जाता है।\n\nसावधानी: खाद सूखी मिट्टी में न डालें; मिट्टी में नमी होनी चाहिए।\n\nस्रोत: KS-नमूना-07 · सरसों: खाद प्रबंधन।",
+      "textEn": "Symptoms: when fertiliser is low or mistimed, plants turn pale, fewer branches form and pods stay small. Excess urea gives more leaf but fewer flowers and pods.\n\nRemedy: apply half of the total dose at sowing and half about thirty days later, when the plants are branching. Applying the dose with a light irrigation at early branching is considered most beneficial for mustard.\n\nCaution: do not apply fertiliser into dry soil; the soil should hold some moisture.\n\nSource: KS-sample-07 · Mustard: fertiliser management.",
+      "source": "KS-नमूना-07 · सरसों: खाद (KS-sample-07 · Mustard: fertiliser)",
+      "priority": 8
+    },
+    {
+      "id": "mustard_pest_aphid",
+      "title": "सरसों में माहू (चेपा) कीट",
+      "titleEn": "Aphid in mustard",
+      "crop": ["mustard"],
+      "season": "rabi",
+      "tags": [
+        "माहू",
+        "चेपा",
+        "लाही",
+        "aphid",
+        "aphids",
+        "कीट",
+        "pest",
+        "रस चूसक"
+      ],
+      "text": "लक्षण: छोटे हरे या काले कीड़े पत्तियों, टहनियों और फलियों पर झुंड में चिपके दिखते हैं। पत्तियाँ मुड़ने लगती हैं और उन पर चिपचिपा पदार्थ जमा हो जाता है। शुरुआत में पौधे खाली दिखते हैं और तेज हमले में फली नहीं बनती।\n\nउपाय: खेत की नियमित निगरानी करें और कीड़ों के झुंड दिखते ही पत्तियों को हटाकर नष्ट कर दें। खेत के किनारे पीले चिपचिपे जाल या पीली ट्रे रखें, क्योंकि माहू पीले रंग की ओर आकर्षित होते हैं। नीम तेल का छिड़काव करें और लेडीबर्ड जैसे मित्र कीटों को बचाए रखें।\n\nसावधानी: फूल बनने के समय कीटनाशक का छिड़काव मधुमक्खियों के लिए नुकसानदायक हैं; ऐसे समय सावधानी रखें।\n\nस्रोत: KS-नमूना-08 · सरसों: माहू कीट।",
+      "textEn": "Symptoms: small green or black insects cluster on leaves, twigs and pods. Leaves start curling and become coated with a sticky substance. Early attack makes plants look bare, and heavy attack prevents pod formation.\n\nRemedy: monitor the field regularly and remove and destroy colonies as soon as they appear. Put yellow sticky traps or yellow trays at the field edges, since aphids are attracted to yellow. Spray neem oil and protect friendly insects such as ladybirds.\n\nCaution: spraying insecticide at flowering harms honeybees; take care at that stage.\n\nSource: KS-sample-08 · Mustard: aphid.",
+      "source": "KS-नमूना-08 · सरसों: माहू (KS-sample-08 · Mustard: aphid)",
+      "priority": 7
+    },
+    {
+      "id": "onion_sowing_transplant",
+      "title": "प्याज की बुवाई और रोपाई",
+      "titleEn": "Onion sowing and transplanting",
+      "crop": ["onion"],
+      "season": "rabi",
+      "tags": [
+        "बुवाई",
+        "बोना",
+        "बीज",
+        "sowing",
+        "रोपाई",
+        "रोपण",
+        "transplant",
+        "नर्सरी",
+        "nursery"
+      ],
+      "text": "लक्षण: बुवाई या रोपाई का समय चूक जाने पर पौधे का आकार छोटा रह जाता है और बल्ब पतले बनते हैं। बहुत देर से रोपाई में पौधे फूल देने लगते हैं और बल्ब की गुणवत्ता घट जाती है।\n\nउपाय: पहले नर्सरी में बीज बोएँ और लगभग छह से आठ सप्ताह बाद स्वस्थ पौध को मुख्य खेत में रोपें। रबी सीजन में प्याज की बुवाई अक्टूबर-नवंबर में की जाती है। रोपाई से पहले क्यारी में सड़ी गोबर खाद अच्छी तरह मिला दें।\n\nसावधानी: बहुत ज्यादा घनी रोपाई से बल्ब छोटे रह जाते हैं; कतारों में उचित दूरी रखें।\n\nस्रोत: KS-नमूना-09 · प्याज: बुवाई व रोपाई।",
+      "textEn": "Symptoms: if sowing or transplanting is late, plants stay small and bulbs form thin. Very late transplanting makes plants flower and lowers bulb quality.\n\nRemedy: first sow the seed in a nursery and after about six to eight weeks transplant healthy seedlings to the main field. In the rabi season onion is sown in October and November. Mix well-rotted farmyard manure into the bed before transplanting.\n\nCaution: very dense planting keeps bulbs small; keep proper spacing between rows.\n\nSource: KS-sample-09 · Onion: sowing and transplanting.",
+      "source": "KS-नमूना-09 · प्याज: बुवाई (KS-sample-09 · Onion: sowing)",
+      "priority": 7
+    },
+    {
+      "id": "onion_pest_thrips",
+      "title": "प्याज में थ्रिप्स कीट",
+      "titleEn": "Thrips in onion",
+      "crop": ["onion"],
+      "season": "rabi",
+      "tags": [
+        "थ्रिप्स",
+        "थ्रिप",
+        "thrips",
+        "कीट",
+        "pest",
+        "रस चूसक",
+        "पत्ती"
+      ],
+      "text": "लक्षण: पत्तियों पर चाँदी जैसी चमकदार धारियाँ और सफेद धब्बे दिखते हैं। पत्तियों के कोने मुड़े रहते हैं और अत्यधिक हमले में पत्तियाँ सूखकर गिर जाती हैं। बल्ब का आकार छोटा रह जाता है। शुष्क और गर्म मौसम में यह कीट तेजी से बढ़ता है।\n\nउपाय: पौधों की निगरानी के लिए खेत में नीले चिपचिपे जाल लगाएँ, क्योंकि थ्रिप्स नीले रंग की ओर खिंचते हैं। खेत में पर्याप्त नमी रखें और खरपतवार साफ रखें। जरूरत पड़ने पर स्थानीय कृषि विशेषज्ञ से अनुशंसित उपचार लें।\n\nसावधानी: छिड़काव के तुरंत बाद सिंचाई न करें, और बल्ब कटाई से पहले तय प्रतीक्षा अवधि पूरी करें।\n\nस्रोत: KS-नमूना-10 · प्याज: थ्रिप्स।",
+      "textEn": "Symptoms: leaves show silvery streaks and white patches. Leaf tips stay curled, and in heavy attack leaves dry and drop. Bulbs stay small. The pest multiplies fast in dry, hot weather.\n\nRemedy: install blue sticky traps in the field to monitor plants, since thrips are drawn to blue. Keep enough moisture in the field and keep weeds clean. If needed, take the treatment recommended by your local agriculture expert.\n\nCaution: do not irrigate immediately after spraying, and complete the stated waiting period before harvesting bulbs.\n\nSource: KS-sample-10 · Onion: thrips.",
+      "source": "KS-नमूना-10 · प्याज: थ्रिप्स (KS-sample-10 · Onion: thrips)",
+      "priority": 7
+    },
+    {
+      "id": "lentil_sowing_window",
+      "title": "मसूर की बुवाई का समय",
+      "titleEn": "Lentil sowing window",
+      "crop": ["lentil"],
+      "season": "rabi",
+      "tags": [
+        "बुवाई",
+        "बोना",
+        "बीज",
+        "sowing",
+        "बीज दर",
+        "seed rate",
+        "समय",
+        "timing"
+      ],
+      "text": "लक्षण: देर से बुवाई करने पर मसूर की बढ़वार कम रहती है, फूल जल्दी आ जाते हैं और दाना हल्का बनता है। सूखी मिट्टी में बीज ठीक से अंकुरित नहीं होते।\n\nउपाय: मसूर की बुवाई रबी सीजन में अक्टूबर के मध्य से नवंबर के मध्य तक करें, क्योंकि इस अवधि में मौसम ठंडा और तापमान कम रहता है। बीज को बीज उपचार के बाद बोएँ और कतारों में उचित दूरी रखें ताकि पौधों को पूरी धूप मिले। मसूर को बहुत अधिक सिंचाई की जरूरत नहीं होती, पर फली बनते समय एक सिंचाई लाभ देती है।\n\nसावधानी: खेत में पानी रुकने न दें; मसूर में जल भराव नुकसानदेह है।\n\nस्रोत: KS-नमूना-11 · मसूर: बुवाई समय।",
+      "textEn": "Symptoms: with late sowing, lentil grows less, flowers early and forms light grain. In dry soil the seed does not germinate well.\n\nRemedy: sow lentil in the rabi season between mid-October and mid-November, since the weather is cool and temperatures stay low in this window. Treat the seed and then sow, keeping proper spacing between rows so plants get full sun. Lentil does not need much irrigation, but one irrigation at pod formation helps.\n\nCaution: do not let water stand in the field; waterlogging is harmful to lentil.\n\nSource: KS-sample-11 · Lentil: sowing window.",
+      "source": "KS-नमूना-11 · मसूर: बुवाई (KS-sample-11 · Lentil: sowing)",
+      "priority": 7
+    },
+    {
+      "id": "spray_safety_neem",
+      "title": "नीम के छिड़काव में सुरक्षा",
+      "titleEn": "Safety while spraying neem",
+      "crop": [],
+      "season": "any",
+      "tags": [
+        "नीम",
+        "नीम तेल",
+        "neem",
+        "neem oil",
+        "छिड़काव",
+        "स्प्रे",
+        "spray",
+        "सुरक्षा",
+        "सुरक्षित",
+        "safety",
+        "safe"
+      ],
+      "text": "लक्षण: नीम तेल का छिड़काव गलत तरीके से करने पर पत्तियों पर जलने के निशान दिख सकते हैं, खासकर दोपहर की तेज धूप में छिड़काव करने पर। ज्यादा गाढ़ा घोल भी पत्तियों को नुकसान पहुँचा सकता है।\n\nउपाय: नीम तेल को पानी में अच्छी तरह मिलाकर पतला घोल बनाएँ और छिड़काव शाम या सुबह ठंडे समय में करें। पत्तियों के नीचे की तरफ भी छिड़काव करें। तेज धूप, तेज हवा और बारिश से ठीक पहले छिड़काव न करें। नया घोल उसी दिन बनाकर इस्तेमाल करें।\n\nसावधानी: छिड़काव करते समय मास्क, चश्मा, पूरी आस्तीन के कपड़े और दस्ताने पहनें। छिड़काव के बाद साबुन से हाथ-मुँह धोएँ और कपड़े बदलें। बच्चों और पालतू जानवरों को छिड़काव वाली जगह से दूर रखें।\n\nस्रोत: KS-नमूना-12 · सुरक्षा: नीम छिड़काव।",
+      "textEn": "Symptoms: spraying neem oil the wrong way can leave burn marks on leaves, especially when spraying in the strong midday sun. An overly thick solution can also damage leaves.\n\nRemedy: mix neem oil well in water to make a thin solution and spray in the cool part of the day, morning or evening. Spray the underside of leaves too. Do not spray in strong sun, strong wind, or just before rain. Mix fresh solution and use it the same day.\n\nCaution: while spraying, wear a mask, eye protection, full-sleeve clothing and gloves. After spraying, wash hands and face with soap and change clothes. Keep children and pets away from the sprayed area.\n\nSource: KS-sample-12 · Safety: neem spraying.",
+      "source": "KS-नमूना-12 · सुरक्षा: नीम छिड़काव (KS-sample-12 · Safety: neem spray)",
+      "priority": 8
+    },
+    {
+      "id": "pre_rain_actions",
+      "title": "बारिश से पहले खेत में क्या करें",
+      "titleEn": "What to do before rain",
+      "crop": [],
+      "season": "kharif",
+      "tags": [
+        "बारिश",
+        "वर्षा",
+        "बरसात",
+        "rain",
+        "बारिश से पहले",
+        "before rain",
+        "जल निकास",
+        "drainage",
+        "जल भराव",
+        "जलभराव",
+        "waterlogging"
+      ],
+      "text": "लक्षण: बारिश से ठीक पहले छिड़काव करने पर दवा बह जाती है और पैसा और मेहनत दोनों बेकार जाते हैं। खेत में पानी रुकने पर जड़ें गलने लगती हैं और पौधे पीले पड़ जाते हैं।\n\nउपाय: मौसम का पूर्वानुमान देखकर बारिश से कम से कम एक दिन पहले छिड़काव पूरा कर लें। खेत के किनारे जल निकास की नाली बनाएँ ताकि बारिश का पानी बाहर निकल जाए। कटी फसल को ढककर रखें और तैयार फसल जल्दी मंडी भेज दें। बीज और खाद को सूखी जगह रखें।\n\nसावधानी: बारिश के दौरान खेत में जाने से बचें; गीली मिट्टी में मशीन फँस सकती है।\n\nस्रोत: KS-नमूना-13 · बारिश से पहले की तैयारी।",
+      "textEn": "Symptoms: spraying just before rain washes the medicine away, wasting both money and effort. If water stands in the field, roots start rotting and plants turn pale.\n\nRemedy: check the forecast and finish spraying at least one day before rain. Cut drainage channels at the field edges so rainwater flows out. Cover harvested produce and send ready crop to the market early. Store seed and fertiliser in a dry place.\n\nCaution: avoid entering the field during rain; machinery can sink into wet soil.\n\nSource: KS-sample-13 · Preparation before rain.",
+      "source": "KS-नमूना-13 · बारिश से पहले (KS-sample-13 · Before rain)",
+      "priority": 6
+    },
+    {
+      "id": "scope_referral",
+      "title": "कृषि साथी किस बारे में जानकारी नहीं देता",
+      "titleEn": "What Krishi Sathi does not cover",
+      "crop": [],
+      "season": "any",
+      "tags": ["out_of_scope", "referral", "scope", "दायरा"],
+      "text": "यह दस्तावेज़ बताता है कि कृषि साथी किन विषयों का जवाब नहीं देता। हम मंडी भाव और कीमत, सरकारी योजनाएँ और सब्सिडी, बैंक लोन और ऋण, मौसम का पूर्वानुमान, तथा मनुष्य या पशु के स्वास्थ्य का इलाज — इन सबके बारे में जानकारी नहीं देते।\n\nइन विषयों के लिए कृपया कृषि विज्ञान केंद्र (KVK), स्थानीय कृषि विभाग या अपने बैंक की सहायता लें। मौसम की सही जानकारी के लिए भारत मौसम विज्ञान विभाग की आधिकारिक जानकारी देखें।\n\nइसके अलावा कृषि साथी केवल उन सवालों का जवाब देता है जिनकी जानकारी उसके ज्ञान-कोश में मौजूद है। हर जवाब के साथ स्रोत दस्तावेज़ दिया जाता है, और जहाँ जानकारी नहीं होती वहाँ साफ़ बताया जाता है कि उत्तर उपलब्ध नहीं है। इससे किसान को पता रहता है कि कौन सी सलाह किस दस्तावेज़ से आई है, और कब स्थानीय कृषि विशेषज्ञ से पूछना चाहिए।\n\nस्रोत: KS-नमूना-14 · दायरा और संपर्क।",
+      "textEn": "This document records what Krishi Sathi does not answer. We do not give information on market prices, government schemes and subsidies, bank loans and credit, weather forecasts, or the diagnosis and treatment of human or animal health.\n\nFor these topics please contact your Krishi Vigyan Kendra (KVK), the local agriculture department, or your bank. For accurate weather, check the official India Meteorological Department information.\n\nBeyond this, Krishi Sathi answers only those questions whose guidance exists in its knowledge base. Every answer shows the source document it came from, and when the knowledge base has no coverage the app says so plainly instead of guessing. This lets the farmer see exactly which document an answer came from, and know when the tool is out of its depth and a local expert should be consulted.\n\nSource: KS-sample-14 · Scope and referral.",
+      "source": "KS-नमूना-14 · दायरा (KS-sample-14 · Scope)",
+      "priority": 1
+    }
+  ]
+}
