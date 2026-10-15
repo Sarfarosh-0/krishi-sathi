@@ -230,9 +230,16 @@ Chrome-heavy → capability checks mandatory.
 1. GitHub repo push (README first: project name, **model `gemma-4-26b-a4b-it`
    named**, integration pointer to `route.ts`, env setup, sample-KB disclaimer,
    screenshots).
+   > *Known issue to fix in this task:* `README.md` is still the stock
+   > `create-next-app` text and wrongly claims the app loads **Geist** (we load
+   > Inter + Noto Sans Devanagari). Deferred here by human decision (2026-10-15).
 2. Vercel import → set `GEMINI_API_KEY` env var (production + preview) → deploy.
 3. Phone smoke test on the public URL: ask, refusal chip, TTS, mic, dashboard,
    rate-limit behavior; warm-up call verified.
+   > *Browser floor check:* Next 16 + Tailwind 4 need Chrome/Edge 111+ ·
+   > Safari 16.4+ · Firefox 128+ (all March 2023+). Accepting this was a human
+   > decision (2026-10-15) — verify on the real demo phone here. If it
+   > misrenders, the fallback is the bundled Tailwind v3 downgrade guide.
 4. Final consistency check: PRD/deck claims ⊆ implemented features; update
    `docs/` if anything changed during build.
 5. MIT LICENSE; final commit; tag `mvp-submission`.
@@ -271,7 +278,7 @@ Legend: ⬜ not started · 🔄 in progress · ✅ done (criteria verified) · �
 
 | ID | Blocker | Impact | Status |
 |---|---|---|---|
-| B1 | Google AI Studio API key not yet confirmed available | Blocks Phase 3 local test & Phase 7 deploy | ⬜ open |
-| B2 | GitHub + Vercel accounts not confirmed | Blocks Phase 7 | ⬜ open — GitHub confirmed (origin → `github.com/Sarfarosh-0/krishi-sathi.git`); Vercel still unconfirmed |
-| B3 | Final project name still placeholder ("Krishi Sathi") | Blocks Phase 7 README/deploy naming | ⬜ open |
+| B1 | Google AI Studio API key not yet confirmed available | Blocks Phase 3 local test & Phase 7 deploy | ⬜ open — human will add it later; Phase 3 is the deadline, Phase 2 needs no key |
+| B2 | GitHub + Vercel accounts not confirmed | Blocks Phase 7 | ⬜ open — GitHub confirmed (origin → `github.com/Sarfarosh-0/krishi-sathi.git`); Vercel deploy deliberately deferred by human to Phase 7 |
+| B3 | Final project name still placeholder ("Krishi Sathi") | Blocks Phase 7 README/deploy naming | ✅ resolved — human locked "Krishi Sathi (कृषि साथी)" (2026-10-15) |
 | B4 | MVP deadline 12 PM confirmed by human, exact date assumed day-2 of event | Timeline only | ✅ resolved (human confirmed 10 hrs) |
