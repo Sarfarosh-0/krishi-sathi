@@ -110,29 +110,40 @@ refusal = amber/cream (**never red**).
 ## 3. Component tree
 
 ```
-app/layout.tsx                  fonts, metadata, PWA manifest link
-app/page.tsx                    (client) composition + orchestration
+app/layout.tsx                  fonts, metadata, viewport (safe-area), manifest link
+app/page.tsx                    (client) composition + streaming orchestration
 ├─ ChatHeader                   title, gradient bg, lang toggle, dashboard btn
 ├─ ChipRow                      8 chips, scrollable
-├─ MessageList                  scroll container
-│  └─ MessageBubble             user | assistant | refusal variants
+├─ MessageList                  scroll container (aria-live, bottom-pinned)
+│  └─ MessageBubble             user | answer | refusal | upstream | stopped
 │     ├─ SourceAccordion        expandable source text (Lucide ChevronDown)
 │     ├─ TTSButton              🔊 सुनें / रोकें (speechSynthesis)
-│     └─ (streaming caret)
-├─ Composer                     VoiceButton (Mic), textarea, SendButton
-├─ DashboardModal               tabs: ImpactPanel | HistoryPanel
-└─ Toast                        offline / rate-limit notices
+│     └─ (thinking row / streaming caret)
+├─ Composer                     Mic button, textarea, Send ⇄ Stop
+├─ Toast                        offline / rate-limit notices (role="status")
+└─ DashboardModal               ⏳ Phase 5 — not built yet (header button is a stub)
 
 lib/
 ├─ retrieval.ts                 scoring (pure, unit-tested)
 ├─ synonyms.ts                  hi/en alias map
 ├─ kb.ts                        JSON loader + module-scope cache
-├─ types.ts                     shared types (below)
-└─ hooks/useLocalStorage.ts     SSR-safe try/catch persistence
+├─ types.ts                     shared types (below) — the wire contract
+├─ chat.ts                      client-only chat model (ChatMessage, MessageStatus)
+├─ markdown.tsx                 renderAnswer (Markdown→React nodes) + toSpeechText
+├─ ui-strings.ts                UIStrings / UI_STRINGS (hi+en) + the 8 CHIPS
+└─ hooks/
+   ├─ useLang.ts                lang + localStorage mirror (key `ks:lang`)
+   ├─ useCapability.ts          SSR-safe capability probe: null → client boolean
+   ├─ useSpeech.ts              speechSynthesis wrapper (FR8)
+   ├─ useVoiceInput.ts          webkitSpeechRecognition wrapper (FR9)
+   └─ useLocalStorage.ts        ⏳ Phase 5 — history/impact persistence
 ```
 
-`SpeechRecognition`/`speechSynthesis` accessed via capability checks — controls
-hidden (not disabled) when unsupported.
+`SpeechRecognition`/`speechSynthesis` are accessed via capability checks
+(`useCapability`) — controls are hidden (not disabled) when unsupported, and
+never render on the server or during the first hydration pass (`supported` is
+`null`), so there is no hydration mismatch and no crash where the API is
+missing.
 
 ---
 
@@ -268,8 +279,60 @@ Localized server strings (`lang: "hi" | "en"`):
 | Rate-limit toast | थोड़ा रुकिए, फिर कोशिश करें। | Please wait a moment and try again. |
 | Offline toast | कनेक्शन नहीं, दोबारा कोशिश करें। | No connection — please try again. |
 
-Client-side UI strings (placeholder, send, chips, dashboard labels) live in the
-localized strings object built in Phase 4 — same table format, hi + en.
+### Client UI strings (`lib/ui-strings.ts`, Phase 4)
+
+The client owns only its own chrome copy and never duplicates the server strings
+above. `lib/ui-strings.ts` is the source of truth; this table mirrors it.
+
+| Key | hi | en |
+|---|---|---|
+| `tagline` | छोटे किसानों के लिए AI सलाहकार | AI advisor for smallholder farmers |
+| `dashboard` | डैशबोर्ड | Dashboard |
+| `dashboardSoon` | डैशबोर्ड जल्द आएगा | Dashboard coming soon |
+| `langToggleLabel` | भाषा बदलें | Change language |
+| `chipsLabel` | सुझाए गए सवाल | Suggested questions |
+| `emptyTitle` | नमस्ते! मैं आपका कृषि सहायक हूँ। | Hello! I'm your farming assistant. |
+| `emptyHint` | नीचे कोई सवाल चुनें या अपना सवाल लिखकर भेजें। | Pick a question below or type your own. |
+| `placeholder` | अपना सवाल लिखें… | Type your question… |
+| `send` | भेजें | Send |
+| `stop` | रोकें | Stop |
+| `listen` | सुनें | Listen |
+| `ttsStop` | रोकें | Stop |
+| `ttsUnsupported` | इस ब्राउज़र में आवाज़ में सुनना उपलब्ध नहीं है। | Read-aloud isn't available in this browser. |
+| `mic` | आवाज़ से पूछें | Ask with your voice |
+| `micStop` | सुनना बंद करें | Stop listening |
+| `micListening` | सुन रहा हूँ… | Listening… |
+| `micUnsupported` | इस ब्राउज़र में आवाज़ से पूछना उपलब्ध नहीं है — सवाल लिखें। | Voice input isn't available in this browser — please type. |
+| `thinking` | सोच रहा हूँ… | Thinking… |
+| `sourcesHeading` | स्रोत | Sources |
+| `sourceExpand` | पूरा स्रोत देखें | Read full source |
+| `sourceCollapse` | स्रोत बंद करें | Hide source |
+| `userLabel` | आपका सवाल | Your question |
+| `assistantLabel` | कृषि साथी का जवाब | Krishi Sathi's answer |
+| `retry` | दोबारा कोशिश करें | Try again |
+| `stopped` | जवाब रोक दिया गया। | Answer stopped. |
+
+`upstreamNote`, `rateLimitToast`, and `offlineToast` are the doc/server strings
+listed in the table above; the client renders their **server-sent** value.
+
+### Suggested questions (`CHIPS`, FR3)
+
+Eight chips drawn from `docs/DECISIONS.md` §3 — seven are answerable from the
+KB; **#8 is deliberately out of scope** so the demo can show the deterministic
+refusal path. Each chip carries a full localized `question` (the text actually
+sent) in addition to the label below. `scripts/test-retrieval.mjs` asserts that
+all seven answerable chips retrieve a chunk and that #8 does not.
+
+| # | id | hi label | en label |
+|---|---|---|---|
+| 1 | `wheat-borer` | गेहूँ: पीली इल्टी | Wheat: yellow stem borer |
+| 2 | `mustard-fertiliser` | सरसों: खाद | Mustard: fertiliser |
+| 3 | `paddy-irrigation` | धान: सिंचाई | Paddy: irrigation |
+| 4 | `wheat-rust` | गेहूँ: रतुआ | Wheat: rust |
+| 5 | `neem-safety` | नीम: सुरक्षा | Neem: spray safety |
+| 6 | `pre-rain` | बारिश से पहले | Before rain |
+| 7 | `onion-sowing` | प्याज: बुवाई | Onion: sowing |
+| 8 | `fish-cost` | मछली पालन: लागत | Fish farming: cost | ← out of KB → refusal |
 
 ---
 
@@ -277,11 +340,16 @@ localized strings object built in Phase 4 — same table format, hi + en.
 
 | State | Where | Notes |
 |---|---|---|
-| Messages (session) | React state (`useState`) | reset on refresh |
-| Streaming partial | ref + state | appended tokens render live |
-| `lang` | state (+ localStorage mirror) | persists across visits |
-| History / impact | localStorage (`ks:*` keys) | cap 50, try/catch, clear-all |
-| Loading / mic-active / TTS-playing | local component state | disable send while loading |
+| Messages (session) | React state (`useState`) | reset on refresh; `ChatMessage` in `lib/chat.ts` |
+| Streaming partial | React state (per message) | tokens appended live; one `AbortController` for the active request |
+| **Thinking state** | derived: `status === "streaming" && text === ""` | the assistant bubble shows a spinner + **"सोच रहा हूँ…"** from send until the first token arrives (the pinned model thinks for 15–33 s). The `sources` accordion can already be on screen while this is showing, which is the whole point of emitting `sources` first |
+| Draft question | React state (`useState`) | cleared on send; truncated to 500 chars client-side as well |
+| `lang` | `useSyncExternalStore` over localStorage `ks:lang` | Hindi default; the document `lang` mirrors it |
+| Capability (TTS / voice) | `useSyncExternalStore` probe (`useCapability`) | `null` on the server and the first hydration pass, then a real boolean — no effect, no `setState` |
+| Speaking message | React state (message id) | one utterance at a time; `null` = idle |
+| Mic active | React state (`useVoiceInput`) | interim transcript is written into the textarea |
+| Toast | React state + 6 s timer | rate-limit (amber) / offline (danger) only |
+| History / impact | ⏳ localStorage (`ks:*` keys, Phase 5) | cap 50, try/catch, clear-all |
 | KB, synonyms, rate-limit counters | server (module scope) | never sent to client except top-3 sources |
 
 **No other state exists** — no global store, no server-side user data.
@@ -290,21 +358,41 @@ localized strings object built in Phase 4 — same table format, hi + en.
 
 ## 7. Interaction rules
 
-- **Streaming:** tokens append to the active bubble; scroll pins to bottom;
-  composer disabled until done; "रोकें" (stop) button aborts via `AbortController`.
-- **Loading:** send button → spinner; chips dimmed (not hidden).
-- **TTS:** `speechSynthesis` with `lang="hi-IN"` (or `en-IN`); button toggles
-  सुनें ⇄ रोकें; auto-cancel on new answer; hidden if unsupported.
+- **Send → thinking → stream:** sending appends the user bubble and an empty
+  assistant bubble that shows a spinner + "सोच रहा हूँ…". The `sources`
+  accordion renders as soon as the `sources` event arrives — *before* any token.
+  Tokens then append live with a pulsing caret. The list pins to the bottom
+  while streaming unless the farmer scrolls up (within ~80 px).
+- **Stop:** while a request is in flight the composer's send button becomes
+  "रोकें"; it aborts via `AbortController`. A partial answer is kept and marked
+  "जवाब रोक दिया गया।"; an empty placeholder is dropped. Chips are dimmed
+  (disabled, not hidden) while loading, as is the textarea.
+- **TTS:** `speechSynthesis` with `lang="hi-IN"` (or `en-IN`); the button toggles
+  सुनें ⇄ रोकें; a new answer auto-cancels playback; hidden (with a hint) if
+  unsupported. It speaks *plain* text — bullet markers, `**`, and the inline
+  `[source_id]` citation are stripped (`toSpeechText`), so nothing
+  unpronounceable is read aloud.
 - **Voice input:** `webkitSpeechRecognition` `hi-IN`, interim results shown in
-  textarea; auto-submit off (farmer confirms with ➤); hidden if unsupported.
-- **Language toggle:** swaps UI strings + future reply language instantly;
-  past messages keep their language (each stores its `lang`).
-- **Source chips:** tap expands full chunk inline (accordion), one open at a time.
-- **Refusal:** amber card + referral text; impact counter increments `refused`.
-- **Errors:** rate-limit → amber toast "थोड़ा रुकिए…"; offline → red toast
-  "कनेक्शन नहीं, दोबारा कोशिश करें"; upstream → snippet-fallback card + retry button.
-- **A11y:** labels on all icon buttons, focus rings, `aria-live="polite"` on the
-  message list, correct `lang` attributes, keyboard-submittable composer.
+  the textarea; auto-submit off (the farmer confirms with ➤); hidden (with a
+  hint) if unsupported.
+- **Language toggle:** swaps UI strings + future reply language instantly
+  (persisted to `ks:lang`); past messages keep their language (each stores its
+  own `lang`), as do their source text and advisory. Chrome (labels, buttons,
+  the "स्रोत / Sources" heading) follows the *current UI* language; message
+  content follows the message's own language.
+- **Source chips:** tap expands the full chunk inline (accordion), one open at a
+  time; the heading shows only when the message has sources.
+- **Refusal:** amber card (amber border, cream bg) + referral text, no `sources`
+  line, no Gemini call; ⚠️ glyph above the text; never red.
+- **Upstream:** snippet-fallback card (amber) + "दोबारा कोशिश करें" retry, which
+  re-sends the original question.
+- **Errors:** rate-limit (429) → amber toast "थोड़ा रुकिए…"; offline → red toast
+  "कनेक्शन नहीं, दोबारा कोशिश करें"; a stream that ends without `done`/`error`
+  is treated as upstream.
+- **A11y:** labels on all icon buttons, focus rings, `aria-live="polite"` +
+  `aria-busy` on the message list, correct `lang` on every text node, and Enter
+  sends while Shift+Enter adds a newline (IME composition is ignored, so Hindi
+  transliteration is not submitted early).
 
 ---
 

@@ -190,3 +190,29 @@ test("edge cases: a 500+ character question is handled without crashing", () => 
   assert.ok(long.length > 500, "test query should exceed 500 characters");
   assert.equal(topId(long), "wheat_pest_yellow_stem_borer");
 });
+
+// ------------------------------------------------------- Phase 4 suggested chips
+
+test("chips: the 7 answerable chips retrieve a chunk and chip #8 refuses", async () => {
+  const { CHIPS } = await import("../lib/ui-strings.ts");
+  assert.equal(CHIPS.length, 8, "there must be exactly 8 suggested chips (FR3)");
+
+  for (const chip of CHIPS) {
+    const expectRefusal = chip.id === "fish-cost"; // the deliberate out-of-KB chip
+    for (const lang of ["hi", "en"]) {
+      const results = retrieve(chip[lang].question, chunks);
+      if (expectRefusal) {
+        assert.deepEqual(
+          results,
+          [],
+          `${chip.id} [${lang}] must refuse, got ${results.map((r) => r.chunk.id).join(",")}`
+        );
+      } else {
+        assert.ok(
+          results.length >= 1,
+          `${chip.id} [${lang}] should retrieve at least one chunk`
+        );
+      }
+    }
+  }
+});

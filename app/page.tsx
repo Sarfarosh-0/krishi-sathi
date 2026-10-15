@@ -1,43 +1,278 @@
-/**
- * Phase 1 smoke screen.
- *
- * Purpose: prove that fonts, colour tokens and language attributes are wired
- * up correctly (build-plan.md Phase 1, task 8). The real chat UI — header,
- * chips, message list, composer — is built in Phase 4 (docs/DESIGN.md §3).
- */
+"use client";
+
+import { useCallback, useEffect, useRef, useState } from "react";
+import ChatHeader from "@/components/ChatHeader";
+import ChipRow from "@/components/ChipRow";
+import Composer from "@/components/Composer";
+import MessageList from "@/components/MessageList";
+import Toast from "@/components/Toast";
+import { newMessageId, type ChatMessage } from "@/lib/chat";
+import { useLang } from "@/lib/hooks/useLang";
+import { useSpeech } from "@/lib/hooks/useSpeech";
+import { UI_STRINGS } from "@/lib/ui-strings";
+import type { AskErrorBody, Lang, StreamEvent } from "@/lib/types";
+
+const MAX_QUESTION_CHARS = 500;
+
+/** Parse one NDJSON line; ignore anything that is not a stream event. */
+function parseEvent(line: string): StreamEvent | null {
+  try {
+    const parsed = JSON.parse(line) as StreamEvent;
+    return parsed && typeof parsed === "object" && "type" in parsed ? parsed : null;
+  } catch {
+    return null;
+  }
+}
+
 export default function Home() {
+  const [lang, setLang] = useLang();
+  const strings = UI_STRINGS[lang];
+
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [draft, setDraft] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [toast, setToast] = useState<{ message: string; tone: "amber" | "danger" } | null>(null);
+
+  const abortRef = useRef<AbortController | null>(null);
+  const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const { supported: speechSupported, speakingKey, toggle: toggleSpeech, stop: stopSpeech } =
+    useSpeech();
+
+  // Warm the serverless function on load (PRD §9, DESIGN §5) — no state, no key.
+  useEffect(() => {
+    void fetch("/api/health").catch(() => {});
+  }, []);
+
+  useEffect(
+    () => () => {
+      if (toastTimer.current) {
+        clearTimeout(toastTimer.current);
+      }
+    },
+    []
+  );
+
+  const showToast = useCallback((message: string, tone: "amber" | "danger") => {
+    setToast({ message, tone });
+    if (toastTimer.current) {
+      clearTimeout(toastTimer.current);
+    }
+    toastTimer.current = setTimeout(() => setToast(null), 6000);
+  }, []);
+
+  const updateMessage = useCallback(
+    (
+      id: string,
+      patch: Partial<ChatMessage> | ((current: ChatMessage) => Partial<ChatMessage>)
+    ) => {
+      setMessages((previous) =>
+        previous.map((message) =>
+          message.id === id
+            ? { ...message, ...(typeof patch === "function" ? patch(message) : patch) }
+            : message
+        )
+      );
+    },
+    []
+  );
+
+  const send = useCallback(
+    async (rawQuestion: string, forcedLang?: Lang) => {
+      const question = rawQuestion.trim().slice(0, MAX_QUESTION_CHARS);
+      if (!question || abortRef.current) {
+        return;
+      }
+      const messageLang = forcedLang ?? lang;
+      const contentStrings = UI_STRINGS[messageLang];
+
+      stopSpeech(); // a new answer cancels any read-aloud
+      setDraft("");
+
+      const assistantId = newMessageId();
+      setMessages((previous) => [
+        ...previous,
+        {
+          id: `${assistantId}-q`,
+          role: "user",
+          lang: messageLang,
+          question,
+          text: question,
+          sources: [],
+          advisory: null,
+          status: "done",
+        },
+        {
+          id: assistantId,
+          role: "assistant",
+          lang: messageLang,
+          question,
+          text: "",
+          sources: [],
+          advisory: null,
+          status: "streaming",
+        },
+      ]);
+      setLoading(true);
+
+      const controller = new AbortController();
+      abortRef.current = controller;
+      let terminated = false;
+
+      const applyEvent = (event: StreamEvent) => {
+        switch (event.type) {
+          case "sources":
+            updateMessage(assistantId, { sources: event.sources });
+            break;
+          case "token":
+            updateMessage(assistantId, (current) => ({ text: current.text + event.text }));
+            break;
+          case "done":
+            updateMessage(assistantId, {
+              status: event.refused ? "refused" : "done",
+              advisory: event.advisory,
+            });
+            break;
+          case "error":
+            updateMessage(assistantId, { status: "upstream" });
+            break;
+        }
+      };
+
+      try {
+        const response = await fetch("/api/ask", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ question, lang: messageLang }),
+          signal: controller.signal,
+        });
+
+        if (!response.ok) {
+          // Pre-stream failures are plain JSON (DESIGN §5).
+          let body: AskErrorBody | null = null;
+          try {
+            body = (await response.json()) as AskErrorBody;
+          } catch {
+            /* non-JSON error body */
+          }
+          if (response.status === 429 && body?.error === "rate_limit") {
+            showToast(contentStrings.rateLimitToast, "amber");
+          }
+          updateMessage(assistantId, { status: "upstream" });
+          return;
+        }
+
+        const contentType = response.headers.get("content-type") ?? "";
+        if (!contentType.includes("x-ndjson") || !response.body) {
+          updateMessage(assistantId, { status: "upstream" });
+          return;
+        }
+
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder();
+        let buffer = "";
+
+        for (;;) {
+          const { value, done } = await reader.read();
+          if (done) {
+            break;
+          }
+          buffer += decoder.decode(value, { stream: true });
+          let newline = buffer.indexOf("\n");
+          while (newline !== -1) {
+            const line = buffer.slice(0, newline).trim();
+            buffer = buffer.slice(newline + 1);
+            if (line) {
+              const event = parseEvent(line);
+              if (event) {
+                applyEvent(event);
+                if (event.type === "done" || event.type === "error") {
+                  terminated = true;
+                }
+              }
+            }
+            newline = buffer.indexOf("\n");
+          }
+        }
+
+        const tail = buffer.trim();
+        if (tail) {
+          const event = parseEvent(tail);
+          if (event) {
+            applyEvent(event);
+            if (event.type === "done" || event.type === "error") {
+              terminated = true;
+            }
+          }
+        }
+
+        // A stream ending without done/error is an upstream failure (DESIGN §5).
+        if (!terminated) {
+          updateMessage(assistantId, { status: "upstream" });
+        }
+      } catch {
+        if (controller.signal.aborted) {
+          // User pressed stop: keep a partial answer, drop an empty placeholder.
+          setMessages((previous) => {
+            const target = previous.find((message) => message.id === assistantId);
+            if (!target || target.text.length === 0) {
+              return previous.filter((message) => message.id !== assistantId);
+            }
+            return previous.map((message) =>
+              message.id === assistantId ? { ...message, status: "stopped" } : message
+            );
+          });
+        } else {
+          updateMessage(assistantId, { status: "upstream" });
+          showToast(contentStrings.offlineToast, "danger");
+        }
+      } finally {
+        abortRef.current = null;
+        setLoading(false);
+      }
+    },
+    [lang, showToast, stopSpeech, updateMessage]
+  );
+
+  const stop = useCallback(() => {
+    abortRef.current?.abort();
+  }, []);
+
+  const retry = useCallback(
+    (message: ChatMessage) => {
+      void send(message.question, message.lang);
+    },
+    [send]
+  );
+
   return (
-    <main className="mx-auto flex w-full max-w-3xl flex-1 flex-col justify-center gap-6 px-4 py-10">
-      <section className="header-gradient rounded-card p-6 text-surface shadow-card">
-        <h1 lang="hi" className="text-2xl font-bold">
-          कृषि साथी
-        </h1>
-        <p lang="hi">छोटे किसानों के लिए AI सलाहकार</p>
-        <p lang="en" className="mt-2 text-sm">
-          Hindi-first AI farming advisor for smallholder farmers near Lucknow
-        </p>
-      </section>
-
-      <section className="rounded-card bg-surface p-6 shadow-card">
-        <h2 lang="hi" className="text-lg font-semibold">
-          सेटअप पूरा हुआ
-        </h2>
-        <p lang="en" className="mt-2 text-muted">
-          Phase 1 (project setup) is complete. The knowledge base, the
-          <span className="font-mono"> /api/ask </span>
-          route and the chat interface arrive in later phases.
-        </p>
-      </section>
-
-      {/* Colour tokens, rendered so the theme is visually verifiable. */}
-      <ul className="flex flex-wrap gap-2 text-sm">
-        <li className="rounded-card bg-primary px-3 py-2 text-surface">
-          primary
-        </li>
-        <li className="rounded-card bg-harvest px-3 py-2 text-ink">harvest</li>
-        <li className="rounded-card bg-soil px-3 py-2 text-surface">soil</li>
-        <li className="rounded-card bg-cream px-3 py-2 text-ink">cream</li>
-      </ul>
-    </main>
+    <div className="flex h-dvh flex-col">
+      <ChatHeader lang={lang} strings={strings} onLangChange={setLang} />
+      <ChipRow
+        lang={lang}
+        label={strings.chipsLabel}
+        disabled={loading}
+        onPick={(question) => void send(question)}
+      />
+      <MessageList
+        messages={messages}
+        lang={lang}
+        strings={strings}
+        loading={loading}
+        speechSupported={speechSupported}
+        speakingKey={speakingKey}
+        onToggleSpeak={toggleSpeech}
+        onRetry={retry}
+      />
+      <Composer
+        lang={lang}
+        strings={strings}
+        value={draft}
+        loading={loading}
+        onChange={setDraft}
+        onSubmit={() => void send(draft)}
+        onStop={stop}
+      />
+      {toast && <Toast message={toast.message} tone={toast.tone} />}
+    </div>
   );
 }

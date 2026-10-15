@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Inter, Noto_Sans_Devanagari } from "next/font/google";
 import "./globals.css";
 
@@ -19,6 +19,15 @@ export const metadata: Metadata = {
   title: "कृषि साथी — Hindi-first farming advisor",
   description:
     "Smallholder farming questions answered in Hindi or English from a curated crop-guidance knowledge base, with sources and an honest refusal when the answer is not covered.",
+};
+
+// `viewport-fit=cover` lets the composer padding use env(safe-area-inset-*)
+// on notched phones (DESIGN §1.4, §2).
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
+  themeColor: "#16A34A",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
