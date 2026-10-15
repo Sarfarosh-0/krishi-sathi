@@ -374,25 +374,28 @@ export default function Home() {
         disabled={loading}
         onPick={(question) => void send(question)}
       />
-      <MessageList
-        messages={messages}
-        lang={lang}
-        strings={strings}
-        loading={loading}
-        speechSupported={speechSupported}
-        speakingKey={speakingKey}
-        onToggleSpeak={toggleSpeech}
-        onRetry={retry}
-      />
-      <Composer
-        lang={lang}
-        strings={strings}
-        value={draft}
-        loading={loading}
-        onChange={setDraft}
-        onSubmit={() => void send(draft)}
-        onStop={stop}
-      />
+      {/* <main> landmark (a11y, B2) wrapping the transcript + composer. */}
+      <main className="flex min-h-0 flex-1 flex-col">
+        <MessageList
+          messages={messages}
+          lang={lang}
+          strings={strings}
+          loading={loading}
+          speechSupported={speechSupported}
+          speakingKey={speakingKey}
+          onToggleSpeak={toggleSpeech}
+          onRetry={retry}
+        />
+        <Composer
+          lang={lang}
+          strings={strings}
+          value={draft}
+          loading={loading}
+          onChange={setDraft}
+          onSubmit={() => void send(draft)}
+          onStop={stop}
+        />
+      </main>
       {toast && <Toast message={toast.message} tone={toast.tone} lang={toast.lang} />}
       {dashboardOpen && (
         <DashboardModal

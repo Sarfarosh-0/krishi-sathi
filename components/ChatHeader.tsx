@@ -31,7 +31,8 @@ export default function ChatHeader({
           <h1 lang="hi" className="truncate text-xl leading-tight font-bold">
             कृषि साथी
           </h1>
-          <p lang={lang} className="truncate text-sm opacity-90">
+          {/* No opacity: white at full strength keeps ≥4.5:1 over the amber end. */}
+          <p lang={lang} className="truncate text-sm">
             {strings.tagline}
           </p>
         </div>

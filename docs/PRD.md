@@ -187,7 +187,13 @@ API down (snippet fallback), rate-limited (friendly Hindi notice), offline
   CSP (`default-src 'self'`, `'unsafe-inline'` for Next's bootstrap/inline styles,
   no `'unsafe-eval'` outside dev — a nonce policy would force dynamic rendering
   and is deliberately avoided, so `frame-ancestors 'self'`), `X-Content-Type-Options:
-  nosniff`, `X-Frame-Options: SAMEORIGIN`.
+  nosniff`, `X-Frame-Options: SAMEORIGIN`, `Strict-Transport-Security`
+  (`max-age=63072000`; browsers ignore it over plain HTTP, so local `next start`
+  is unaffected), `Referrer-Policy: strict-origin-when-cross-origin`, and
+  `Permissions-Policy` (camera/geolocation/payment/usb denied, `microphone=(self)`
+  because voice input needs it). `X-Powered-By` is disabled
+  (`poweredByHeader: false`). The Node runtime is pinned (`engines.node
+  ">=20.9.0"` + `.nvmrc` 22).
 - Privacy: no accounts, no analytics, no server-side storage of questions;
   history and counters stay in the device's localStorage (honestly labelled as
   device-local, not global).

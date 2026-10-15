@@ -9,6 +9,10 @@
 >
 > **Audit date:** 2026-10-16 · **Auditor:** AI agent (OpenCode) ·
 > **Repository:** `github.com/Sarfarosh-0/krishi-sathi` · **Commit:** `afcd3a6`
+>
+> **Status update (2026-10-16):** a follow-up fix pass closed the in-repo
+> blockers B1, B2 and B5 and the header items S9/S10. The *Status* and *Evidence*
+> fields below reflect the post-fix state; resolved rows say so explicitly.
 
 ---
 
@@ -130,16 +134,16 @@
 - **Risk:** SSL-strip / downgrade attacks on first visit; cookie-less app but still a hardening gap (OWASP A02).
 - **Verification:** `curl -sD -` and look for `strict-transport-security`.
 - **Priority:** High
-- **Status:** ❌ Failed
-- **Evidence or Notes:** Header **absent** on all responses. Not set in `next.config.ts`. Vercel may add it for custom domains — **must be verified after deploy** (D3).
+- **Status:** ✅ Passed (header set; live-URL check pending)
+- **Evidence or Notes:** `Strict-Transport-Security: max-age=63072000` added in `next.config.ts` and **confirmed on `next start`** (2026-10-16). No `includeSubDomains` (the app may sit on a shared `*.vercel.app` domain). Still to confirm on the deployed HTTPS URL (B4/D3).
 
 ### S10 — Additional hardening headers
 - [ ] **Requirement:** `Referrer-Policy`, `Permissions-Policy`, and removal of `X-Powered-By`.
 - **Risk:** Framework/version disclosure and unnecessary browser feature exposure (OWASP A05).
 - **Verification:** `curl -sD -`; check for `referrer-policy`, `permissions-policy`, `x-powered-by`.
 - **Priority:** Medium
-- **Status:** ❌ Failed
-- **Evidence or Notes:** All three are **absent/unset**: no `Referrer-Policy`, no `Permissions-Policy`, and `X-Powered-By: Next.js` is disclosed. `poweredByHeader: false` is not set in `next.config.ts`.
+- **Status:** ✅ Passed
+- **Evidence or Notes:** Added `Referrer-Policy: strict-origin-when-cross-origin`, `Permissions-Policy: camera=(), geolocation=(), payment=(), usb=(), microphone=(self)` (microphone is **allowed** so Web Speech voice input keeps working), and `poweredByHeader: false`. Confirmed on `next start` (2026-10-16): both headers present, `X-Powered-By` **absent**.
 
 ### S11 — Origin / CORS protection
 - [ ] **Requirement:** `POST /api/ask` rejects cross-site requests via an `Origin` check (same-origin only).
@@ -334,16 +338,16 @@
 - **Risk:** Any unexpected render error shows a bare "Application error" (or a dev overlay in development) to a farmer.
 - **Verification:** Check for `app/error.tsx` / `app/global-error.tsx`; throw inside a component and observe.
 - **Priority:** High
-- **Status:** ❌ Failed
-- **Evidence or Notes:** **No `error.tsx`, `global-error.tsx`, `not-found.tsx`, or `loading.tsx` exist** (directory listing of `app/`). Errors fall through to Next's built-in pages.
+- **Status:** ✅ Passed
+- **Evidence or Notes:** Added `app/error.tsx` (Client Component boundary with `reset`, bilingual, on-brand) and `app/global-error.tsx` (renders its own `<html>/<body>`). Both compile into the build. Not force-rendered in this audit (there is no throw route) — a forced-throw drill remains a nice-to-have under §11.
 
 ### E15 — Unknown route / 404
 - [ ] **Requirement:** A user-friendly, on-brand 404 page.
 - **Risk:** Generic Next 404 breaks the experience.
 - **Verification:** Visit `/does-not-exist`; check for a custom page.
 - **Priority:** Low
-- **Status:** ❌ Failed
-- **Evidence or Notes:** Build output shows only the default `/_not-found`. No custom page.
+- **Status:** ✅ Passed
+- **Evidence or Notes:** Added `app/not-found.tsx`. Verified in-browser (2026-10-16): `/does-not-exist` → 404 with the branded page ("404 · यह पेज नहीं मिला · This page could not be found · चैट पर वापस जाएँ") and a `<main>` landmark.
 
 ---
 
@@ -514,24 +518,24 @@
 - **Risk:** Screen-reader/keyboard users blocked.
 - **Verification:** Lighthouse/Axe run (this audit) + manual keyboard pass.
 - **Priority:** High
-- **Status:** ❌ Failed
-- **Evidence or Notes:** Lighthouse **Accessibility = 0.94** with two failures: `color-contrast` and `landmark-one-main` (see U2, U3).
+- **Status:** ✅ Passed
+- **Evidence or Notes:** Lighthouse **Accessibility = 1.0**, zero failures, re-run 2026-10-16 after the landmark + contrast fixes (was 0.94 with `color-contrast` + `landmark-one-main`). Best Practices 1.0, SEO 1.0.
 
 ### U2 — Color contrast
 - [ ] **Requirement:** Text meets WCAG AA contrast (≥ 4.5:1 normal, ≥ 3:1 large).
 - **Risk:** Low-vision users cannot read muted/hint text.
 - **Verification:** Lighthouse `color-contrast`; measure specific pairs.
 - **Priority:** High
-- **Status:** ❌ Failed
-- **Evidence or Notes:** Lighthouse flags insufficient contrast. Computed examples: `text-muted` (#78716C) on cream (#FAF7F2) ≈ **4.49:1** (just under 4.5 for normal text); white on `--primary` (#16A34A) ≈ **3.3:1** (below 4.5 for normal text — affects the user bubble). Confirm exact failing nodes with the Lighthouse details / a contrast checker.
+- **Status:** ✅ Passed
+- **Evidence or Notes:** Fixed by darkening tokens: `--primary` green-600→green-700 (`#15803D`), `--muted` stone-500→stone-600 (`#57534E`), header-gradient amber stop amber-500→amber-700 (`--harvest-dark` `#B45309`), and removing `opacity-90` from the header tagline. A hand-rolled in-page contrast walker (parses gradient stops, composites translucent layers) now reports **0 failing nodes** — previously: chips 3.08:1, active language toggle 3.30:1, header title 2.15:1, tagline 1.99:1. Lighthouse `color-contrast` passes.
 
 ### U3 — Landmarks & heading structure
 - [ ] **Requirement:** The page has a `<main>` landmark and a logical heading outline.
 - **Risk:** Screen-reader users cannot jump to main content.
 - **Verification:** Lighthouse `landmark-one-main`; DOM probe for `main`.
 - **Priority:** High
-- **Status:** ❌ Failed
-- **Evidence or Notes:** DOM probe: `hasMain = false`; landmarks present are only `header`, `nav`, and `[role=group]`. One `<h1>` exists ("कृषि साथी"), so headings are fine — only the main landmark is missing.
+- **Status:** ✅ Passed
+- **Evidence or Notes:** A `<main>` now wraps the transcript + composer (`app/page.tsx`); DOM probe `hasMain = true`; Lighthouse `landmark-one-main` passes. One `<h1>` ("कृषि साथी") remains, so the heading outline is unchanged.
 
 ### U4 — Labels, roles, and live regions
 - [ ] **Requirement:** Icon buttons have labels; dynamic content is announced.
@@ -638,8 +642,8 @@
 - **Risk:** Local Node 24 vs host Node version → subtle runtime differences; Next requires `>= 20.9.0`.
 - **Verification:** Check `package.json` `engines`, `.nvmrc`, and the Vercel project Node setting.
 - **Priority:** High
-- **Status:** ❌ Failed
-- **Evidence or Notes:** No `engines` field, no `.nvmrc`, no `packageManager`. Local Node is **v24.16.0**; host version unset.
+- **Status:** ✅ Passed
+- **Evidence or Notes:** `package.json` now declares `engines.node ">=20.9.0"` and `.nvmrc` pins `22` (2026-10-16). Local Node v24.16.0 satisfies the range; run `nvm use` for exact parity, and set the host to the `.nvmrc` value at deploy.
 
 ### D5 — Function duration/plan compatibility
 - [ ] **Requirement:** The host allows the 60 s function duration the route requires.
@@ -771,41 +775,43 @@
 
 | # | Area | Items | Passed | Failed | In Progress | Not Started | N/A |
 |---|---|---:|---:|---:|---:|---:|---:|
-| 2 | Security | 20 | 9 | 3 | 2 | 3 | 3 |
-| 3 | Edge cases & error handling | 15 | 13 | 2 | 0 | 0 | 0 |
+| 2 | Security | 20 | 11 | 1 | 2 | 3 | 3 |
+| 3 | Edge cases & error handling | 15 | 15 | 0 | 0 | 0 | 0 |
 | 4 | Reliability & data integrity | 11 | 6 | 1 | 2 | 0 | 2 |
 | 5 | Performance & scalability | 8 | 3 | 0 | 2 | 3 | 0 |
-| 6 | UX & accessibility | 12 | 7 | 3 | 0 | 2 | 0 |
-| 7 | Deployment & operations | 10 | 2 | 2 | 0 | 6 | 0 |
+| 6 | UX & accessibility | 12 | 10 | 0 | 0 | 2 | 0 |
+| 7 | Deployment & operations | 10 | 3 | 1 | 0 | 6 | 0 |
 | 8 | Testing & documentation | 9 | 4 | 1 | 0 | 4 | 0 |
-| | **Total** | **85** | **44** | **12** | **6** | **18** | **5** |
+| | **Total** | **85** | **52** | **4** | **6** | **18** | **5** |
 
-**Interpretation:** the core product is in good shape — the grounded/refusal
-pipeline, streaming contract, secret handling, input validation, and the
-failure drills are all **verified**. Readiness is limited by **hardening and
-operational gaps** (missing security headers, an a11y landmark/contrast defect,
-no error boundary, no runtime pin, no CI, no monitoring) and by the fact that
-**deployment itself has not happened**, so anything deploy-dependent is
-unverified.
+**Interpretation (updated 2026-10-16):** the product logic **and** the previously
+failing hardening items are now verified — grounded/refusal pipeline, streaming
+contract, secret handling, input validation, failure drills, error boundaries,
+`<main>` landmark + contrast (Lighthouse a11y **1.0**), the new security headers
+and the Node pin all pass. What remains is almost entirely **deploy-dependent**
+(host env, HTTPS/HSTS on the live URL, function duration) plus **operational
+visibility** (monitoring/alerting). The only non-deploy `Failed` items are the
+deliberately out-of-scope CI/CD (D8) and the accepted dev-only `braces` advisory
+(S14).
 
 ---
 
 ## 10. Critical blockers (must be resolved before go-live)
 
-| ID | Blocker | Why it blocks | Ref |
-|---|---|---|---|
-| **B1** | No custom error boundary (`app/error.tsx` / `global-error.tsx`) | Any unexpected render error shows a bare error screen to a farmer. | E14 |
-| **B2** | Missing `<main>` landmark + color-contrast failures | Verified WCAG failures; blocks an accessibility baseline. | U1, U2, U3 |
-| **B3** | `GEMINI_API_KEY` not set in the host (prod + preview) | The deployed app would fall back on every question. | D1 |
-| **B4** | HTTPS + HSTS not verified on the deployed URL | Transport security unproven. | S9, D3 |
-| **B5** | No runtime (Node) version pin | Local Node 24 vs host; reproducibility risk. | D4 |
-| **B6** | Function duration/plan compatibility unverified (needs 60 s) | Slow answers could be killed mid-stream. | P3, D5 |
-| **B7** | No monitoring/alerting | Outages and quota exhaustion are invisible. | R9 |
-| **B8** | No post-deploy verification runbook executed | Production-only failures (env, headers, latency) go unnoticed. | D7 |
+| ID | Blocker | Why it blocks | Ref | Status |
+|---|---|---|---|---|
+| **B1** | No custom error boundary (`app/error.tsx` / `global-error.tsx`) | Any unexpected render error shows a bare error screen to a farmer. | E14 | ✅ resolved 2026-10-16 — both boundaries added |
+| **B2** | Missing `<main>` landmark + color-contrast failures | Verified WCAG failures; blocks an accessibility baseline. | U1, U2, U3 | ✅ resolved 2026-10-16 — `<main>` added, tokens darkened, Lighthouse a11y **1.0** |
+| **B3** | `GEMINI_API_KEY` not set in the host (prod + preview) | The deployed app would fall back on every question. | D1 | ⬜ open — needs Vercel |
+| **B4** | HTTPS + HSTS not verified on the deployed URL | Transport security unproven. | S9, D3 | 🟡 partial — HSTS header now sent locally; live-URL check pending |
+| **B5** | No runtime (Node) version pin | Local Node 24 vs host; reproducibility risk. | D4 | ✅ resolved 2026-10-16 — `engines` + `.nvmrc` 22 |
+| **B6** | Function duration/plan compatibility unverified (needs 60 s) | Slow answers could be killed mid-stream. | P3, D5 | ⬜ open — needs Vercel plan |
+| **B7** | No monitoring/alerting | Outages and quota exhaustion are invisible. | R9 | ⬜ open — needs a service/account |
+| **B8** | No post-deploy verification runbook executed | Production-only failures (env, headers, latency) go unnoticed. | D7 | ⬜ open — needs a deploy |
 
-> None of these are product-logic defects; they are hardening/ops items. Most are
-> small, but they are gating because they affect **security, accessibility, and
-> operability** of the live service.
+> None of these are product-logic defects. **B1, B2 and B5 are now closed**; the
+> five that remain (B3, B4, B6, B7, B8) all require the deployment to exist or a
+> monitoring account, so they cannot be resolved from the repo alone.
 
 ---
 
@@ -819,7 +825,7 @@ unverified.
 - **P1 / P7 / T6** — Performance and concurrency unmeasured.
 - **U7** — No `prefers-reduced-motion` handling.
 - **U12** — No iOS `apple-mobile-web-app-capable` meta; no service worker (no offline).
-- **E14/E15** — Default error/404 pages.
+- **E14** — The error boundaries are implemented and compiled but were not force-rendered (there is no throw route); run a forced-throw drill.
 - **S5 / T4** — Prompt-injection and DAST testing not performed.
 - **R5** — History source rebuild silently drops unknown KB ids.
 - **Gemini availability** — `gemma-4-26b-a4b-it` returns fast intermittent 5xx (observed live repeatedly). Mitigated by retries + snippet fallback; **not eliminated**. Re-check quota/tier before a live demo.
@@ -828,31 +834,34 @@ unverified.
 
 - **S14** — 5 high dev-only `braces` advisories with no patched version; production audit is clean (0).
 - **S8** — `'unsafe-inline'` CSP (see above).
+- **D8** — No CI/CD: deliberately out of scope (`AGENTS.md` #11 bans CI/CD for this hackathon MVP); lint/test/build/smoke are run manually (as in this audit).
 
 ---
 
 ## 12. Final go/no-go deployment decision
 
-> **Decision: NO-GO (hold) — conditional.**
+> **Decision: NO-GO (hold) — deploy-dependent only.**
 >
-> **Rationale:** The application logic is verified and robust (grounded answers,
-> deterministic refusal with zero model calls, graceful upstream/offline/429
-> handling, server-only secret handling, and a passing test/build/lint suite).
-> However, the release is **not yet deployable as-is** because: (1) verified
-> accessibility failures exist; (2) there is no error boundary for render
-> failures; (3) the production secret, HTTPS/HSTS, and function-duration
-> requirements are **unverified**; and (4) there is no monitoring or CI to catch
-> regressions or outages.
+> **Rationale (updated 2026-10-16):** the in-repo gating items are **closed** —
+> error boundaries exist, the `<main>` landmark and contrast failures are fixed
+> (Lighthouse Accessibility **1.0**), HSTS/`Referrer-Policy`/`Permissions-Policy`
+> are sent and `X-Powered-By` is gone, and the Node runtime is pinned. The
+> application logic was already verified (grounded answers, deterministic refusal
+> with zero model calls, graceful upstream/offline/429 handling, server-only
+> secrets, green lint/test/build/smoke).
 >
-> **Conditions to flip to GO:** resolve **B1–B8** (§10), re-run
-> `npm run lint && npm run test && npm run build`, execute the post-deploy smoke
-> (`SMOKE_BASE_URL=<deploy> npm run smoke`) plus a real-phone pass, and record
-> the results in the *Evidence or Notes* fields above.
+> The release is still **NO-GO** only because the remaining blockers are
+> **unverifiable without a deployment or a monitoring account**: B3 (host env
+> var), B4 (HTTPS/HSTS on the live URL), B6 (60 s function duration), B7
+> (monitoring/alerting) and B8 (post-deploy smoke).
 >
-> **Fastest path to GO:** B5 (pin Node), B1 (add `error.tsx`), B2 (add a `<main>`
-> + fix the two contrast pairs), then deploy and verify B3/B4/B6/B8 on the live
-> URL; B7 (add basic error reporting/alerting) can be the last item before
-> announcing the URL.
+> **Conditions to flip to GO:** deploy, then resolve **B3–B8** (§10); re-run
+> `npm run lint && npm run test && npm run build`; execute the post-deploy smoke
+> (`SMOKE_BASE_URL=<deploy> npm run smoke`) plus a real-phone pass; record the
+> results in the *Evidence or Notes* fields above.
+>
+> **Fastest path to GO:** deploy (B3/B4/B6/B8 verified in one pass on the live
+> URL), then add basic error reporting/alerting (B7) before announcing the URL.
 
 ---
 
@@ -860,20 +869,28 @@ unverified.
 
 | Check | Command / method | Result |
 |---|---|---|
-| Unit/retrieval tests | `npm run test` | **12/12 passing** |
+| Unit/retrieval tests | `npm run test` | **12/12 passing** (re-run 2026-10-16) |
+| API contract smoke | `npm run smoke` | **23/23 passing** (2026-10-16; 1 real Gemini call, 33.6 s) |
 | Lint | `npm run lint` | Clean (no output) |
 | Production build | `npm run build` | Compiled successfully; TS passed; 6 routes |
 | Prod dependency audit | `npm audit --omit=dev` | **0 vulnerabilities** |
 | Full dependency audit | `npm audit` | 5 high, 0 critical (dev-only `braces` chain, no patch) |
-| Response headers | `curl -sD - -o NUL http://localhost:3000/` | CSP, `X-Content-Type-Options: nosniff`, `X-Frame-Options: SAMEORIGIN` present; **no HSTS / Referrer-Policy / Permissions-Policy**; `X-Powered-By: Next.js` present |
+| Response headers (before) | `curl -sD - -o NUL http://localhost:3000/` | CSP, `nosniff`, `SAMEORIGIN` present; **no HSTS / Referrer-Policy / Permissions-Policy**; `X-Powered-By: Next.js` present |
+| Response headers (after) | `curl -sD -` (2026-10-16) | **+ `Strict-Transport-Security: max-age=63072000`, `Referrer-Policy`, `Permissions-Policy`; `X-Powered-By` gone** |
+| Custom 404 | `curl -sD -` + `browser.evaluate` on `/does-not-exist` | `404` + branded page, `hasMain=true` |
 | Manifest | `curl` `/manifest.webmanifest` | `200`, `application/manifest+json` |
-| Accessibility / best practices / SEO | Lighthouse (Chrome, prod build) | a11y **0.94**, best-practices **1.0**, SEO **1.0**; failures: `color-contrast`, `landmark-one-main` |
-| DOM/landmark probe | `browser.evaluate` | `hasMain=false`, `h1Count=1`, `htmlLang=hi`, `og=false`, `canonical=false`, `appleWebApp=false` |
+| Accessibility / best practices / SEO (before) | Lighthouse (Chrome, prod build) | a11y **0.94**, best-practices **1.0**, SEO **1.0**; failures: `color-contrast`, `landmark-one-main` |
+| Accessibility / best practices / SEO (after) | Lighthouse (2026-10-16) | a11y **1.0**, best-practices **1.0**, SEO **1.0**; **zero failures** |
+| Contrast walker | in-page `browser.evaluate` (parses gradient stops, composites layers) | before: 12 failing nodes; after: **0** |
+| DOM/landmark probe | `browser.evaluate` | before `hasMain=false`; after `hasMain=true`, `h1Count=1`, `htmlLang=hi` |
 | Failure drills | browser + curl (no-key / bad-key / offline / 429) | All show friendly Hindi UI; no technical leakage |
 | Secret/XSS greps | `grep` for `GEMINI_API_KEY`, `NEXT_PUBLIC_`, `dangerouslySetInnerHTML`, `AIza…` | No matches in app code |
-| CI presence | directory listing | No `.github/` directory |
-| Node pin | `package.json` / `.nvmrc` | None; `next` requires `>= 20.9.0`; local Node v24.16.0 |
+| CI presence | directory listing | No `.github/` directory (deliberate — `AGENTS.md` #11) |
+| Node pin | `package.json` / `.nvmrc` | before: none; after: `engines.node ">=20.9.0"` + `.nvmrc` 22 |
 
-**Out of scope for this audit:** no code or configuration was modified; no fixes
-were implemented. Performance score, load testing, DAST, and prompt-injection
-testing were **not** performed and remain ⬜ Not Started.
+**Scope note:** the audit itself changed no code. The follow-up fix pass
+(2026-10-16) changed only the app/config listed in the items above — error/404
+pages, design tokens, `next.config.ts` headers, `package.json` engines and
+`.nvmrc` — and did not touch the API, retrieval, KB, or prompt. Performance
+score, load testing, DAST and prompt-injection testing were **not** performed and
+remain ⬜ Not Started.

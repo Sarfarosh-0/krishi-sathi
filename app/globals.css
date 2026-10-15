@@ -7,14 +7,17 @@
  * (var(--color-primary)) for the plain-CSS rules further down.
  */
 @theme {
-  --color-primary: #16a34a;      /* buttons, user bubble, links */
-  --color-primary-dark: #15803d; /* hover / pressed */
+  /* Contrast-audited against WCAG AA. Green-700 (not green-600) so white text
+     on --primary AND --primary text on cream both clear 4.5:1. */
+  --color-primary: #15803d;      /* buttons, user bubble, links */
+  --color-primary-dark: #166534; /* hover / pressed */
   --color-soil: #8b5a2b;         /* secondary accents, icons */
-  --color-harvest: #f59e0b;      /* refusal card, highlights */
+  --color-harvest: #f59e0b;      /* refusal card, highlights (always with --ink) */
+  --color-harvest-dark: #b45309; /* header-gradient end (amber-700) */
   --color-cream: #faf7f2;        /* page background */
   --color-surface: #ffffff;      /* cards, assistant bubble */
   --color-ink: #1c1917;          /* body text (max contrast) */
-  --color-muted: #78716c;        /* timestamps, meta */
+  --color-muted: #57534e;        /* timestamps, meta (stone-600) */
   --color-danger: #dc2626;       /* network toast only — never the refusal card */
 
   /* cards/chips 12px · buttons 10px · bubbles 16px */
@@ -32,9 +35,15 @@
     system-ui, sans-serif;
 }
 
-/* The single green → amber gradient. Header/hero only (DESIGN §1, §2). */
+/* The single green → amber gradient. Header/hero only (DESIGN §1, §2). Both
+   stops are dark enough that the white header title, tagline and controls clear
+   WCAG AA (≥4.5:1), including over the amber end. */
 @utility header-gradient {
-  background-image: linear-gradient(90deg, #16a34a, #f59e0b);
+  background-image: linear-gradient(
+    90deg,
+    var(--color-primary),
+    var(--color-harvest-dark)
+  );
 }
 
 /* Base type — 16px body, 1.6 line-height (Hindi needs air). Solid surfaces

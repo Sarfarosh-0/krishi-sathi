@@ -28,10 +28,23 @@ const securityHeaders = [
   { key: "Content-Security-Policy", value: contentSecurityPolicy },
   { key: "X-Content-Type-Options", value: "nosniff" },
   { key: "X-Frame-Options", value: "SAMEORIGIN" },
+  // Two years of HTTPS-only, once the browser has seen the site over TLS.
+  // Browsers ignore HSTS over plain HTTP, so local `next start` is unaffected.
+  // No includeSubDomains: the app may sit on a shared *.vercel.app domain.
+  { key: "Strict-Transport-Security", value: "max-age=63072000" },
+  // Send the full URL only to same-origin destinations.
+  { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
+  // Deny unused powerful features. microphone=(self) is REQUIRED: voice input
+  // uses the Web Speech API, which needs microphone access on this origin.
+  {
+    key: "Permissions-Policy",
+    value: "camera=(), geolocation=(), payment=(), usb=(), microphone=(self)",
+  },
 ];
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  // Don't advertise the framework/version in responses.
+  poweredByHeader: false,
   cacheComponents: true,
   partialPrefetching: true,
   turbopack: {

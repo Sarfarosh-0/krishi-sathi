@@ -83,19 +83,24 @@ Same single column at full width; chips scroll; composer fixed to bottom with
 
 | Token | Hex | Use |
 |---|---|---|
-| `--primary` | `#16A34A` (green-600) | buttons, user bubble, links |
-| `--primary-dark` | `#15803D` | hover/pressed |
+| `--primary` | `#15803D` (green-700) | buttons, user bubble, links |
+| `--primary-dark` | `#166534` | hover/pressed |
 | `--soil` | `#8B5A2B` | secondary accents, icons |
-| `--harvest` | `#F59E0B` (amber-500) | refusal card, highlights |
+| `--harvest` | `#F59E0B` (amber-500) | refusal card, highlights (always with `--ink`) |
+| `--harvest-dark` | `#B45309` (amber-700) | header-gradient end |
 | `--cream` | `#FAF7F2` | page background |
 | `--surface` | `#FFFFFF` | cards, assistant bubble |
 | `--ink` | `#1C1917` (stone-900) | body text (max contrast) |
-| `--muted` | `#78716C` (stone-500) | timestamps, meta |
+| `--muted` | `#57534E` (stone-600) | timestamps, meta |
 | `--danger` | `#DC2626` | network toast only (never refusal) |
-| header gradient | `linear-gradient(90deg,#16A34A,#F59E0B)` | **header only** |
+| header gradient | `linear-gradient(90deg,#15803D,#B45309)` | **header only** |
 
-Rules: no `backdrop-filter`, no translucent surfaces, body text ≥ 4.5:1 contrast,
-refusal = amber/cream (**never red**).
+Rules: no `backdrop-filter`, no translucent surfaces, **all** text ≥ 4.5:1
+(≥ 3:1 for large text) — verified with Lighthouse/axe at **Accessibility 1.0**;
+refusal = amber/cream (**never red**). Green-700 (not green-600) is required:
+green-600 text on cream is 3.08:1 and white on green-600 is 3.30:1, both below
+AA. The header gradient's amber stop is darkened to amber-700 for the same
+reason (white over amber-500 is 2.15:1).
 
 ### Typography
 
@@ -433,10 +438,13 @@ all seven answerable chips retrieve a chunk and that #8 does not.
     on phones (`max-w-lg`, scrollable body, safe-area padding) and centered on
     desktop.
 - **A11y:** labels on all icon buttons, one global `:focus-visible` ring
-  (2px ink outline, 2px offset — `app/globals.css`), `aria-live="polite"` +
-  `aria-busy` on the message list, correct `lang` on every text node, and Enter
-  sends while Shift+Enter adds a newline (IME composition is ignored, so Hindi
-  transliteration is not submitted early).
+  (2px ink outline, 2px offset — `app/globals.css`), a `<main>` landmark around
+  the transcript + composer, `aria-live="polite"` + `aria-busy` on the message
+  list, correct `lang` on every text node, and Enter sends while Shift+Enter adds
+  a newline (IME composition is ignored, so Hindi transliteration is not
+  submitted early). **Lighthouse Accessibility = 1.0** (contrast + landmark
+  failures fixed). A root `app/error.tsx` + `app/global-error.tsx` and a branded
+  `app/not-found.tsx` cover render failures and unknown routes.
 
 ---
 
