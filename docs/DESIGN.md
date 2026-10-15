@@ -66,6 +66,11 @@ only for demo flair; surfaces stay solid.
 └──────────────────────────────────────────────────────────────┘
 ```
 
+Implemented in Phase 5 (`components/DashboardModal.tsx`): the tab row, the three
+counters, the last-question date, and `ज्ञान कक्षा: 5 फसलें · 14 दस्तावेज़ ·
+2 भाषाएँ` all match this sketch, with the "कोई डेटा बाहर नहीं जाता" line beneath.
+On phones the panel is a bottom sheet at full width.
+
 ### 1.4 Mobile (< 768px)
 Same single column at full width; chips scroll; composer fixed to bottom with
 `env(safe-area-inset-bottom)`; header compresses to title + toggle icon.
@@ -121,7 +126,7 @@ app/page.tsx                    (client) composition + streaming orchestration
 │     └─ (thinking row / streaming caret)
 ├─ Composer                     Mic button, textarea, Send ⇄ Stop
 ├─ Toast                        offline / rate-limit notices (role="status")
-└─ DashboardModal               ⏳ Phase 5 — not built yet (header button is a stub)
+└─ DashboardModal               modality + tabs: device-local impact + history (FR12)
 
 lib/
 ├─ retrieval.ts                 scoring (pure, unit-tested)
@@ -136,7 +141,7 @@ lib/
    ├─ useCapability.ts          SSR-safe capability probe: null → client boolean
    ├─ useSpeech.ts              speechSynthesis wrapper (FR8)
    ├─ useVoiceInput.ts          webkitSpeechRecognition wrapper (FR9)
-   └─ useLocalStorage.ts        ⏳ Phase 5 — history/impact persistence
+   └─ useLocalStorage.ts        SSR-safe versioned `ks:*` history/impact store
 ```
 
 `SpeechRecognition`/`speechSynthesis` are accessed via capability checks
@@ -279,7 +284,7 @@ Localized server strings (`lang: "hi" | "en"`):
 | Rate-limit toast | थोड़ा रुकिए, फिर कोशिश करें। | Please wait a moment and try again. |
 | Offline toast | कनेक्शन नहीं, दोबारा कोशिश करें। | No connection — please try again. |
 
-### Client UI strings (`lib/ui-strings.ts`, Phase 4)
+### Client UI strings (`lib/ui-strings.ts`, Phases 4–5)
 
 The client owns only its own chrome copy and never duplicates the server strings
 above. `lib/ui-strings.ts` is the source of truth; this table mirrors it.
@@ -288,7 +293,6 @@ above. `lib/ui-strings.ts` is the source of truth; this table mirrors it.
 |---|---|---|
 | `tagline` | छोटे किसानों के लिए AI सलाहकार | AI advisor for smallholder farmers |
 | `dashboard` | डैशबोर्ड | Dashboard |
-| `dashboardSoon` | डैशबोर्ड जल्द आएगा | Dashboard coming soon |
 | `langToggleLabel` | भाषा बदलें | Change language |
 | `chipsLabel` | सुझाए गए सवाल | Suggested questions |
 | `emptyTitle` | नमस्ते! मैं आपका कृषि सहायक हूँ। | Hello! I'm your farming assistant. |
@@ -311,6 +315,22 @@ above. `lib/ui-strings.ts` is the source of truth; this table mirrors it.
 | `assistantLabel` | कृषि साथी का जवाब | Krishi Sathi's answer |
 | `retry` | दोबारा कोशिश करें | Try again |
 | `stopped` | जवाब रोक दिया गया। | Answer stopped. |
+| `tabImpact` | इस डिवाइस का प्रभाव | Impact from this device |
+| `tabHistory` | इतिहास | History |
+| `close` | बंद करें | Close |
+| `askedLabel` | सवाल पूछे | Questions asked |
+| `answeredLabel` | जवाब मिले | Answered |
+| `refusedLabel` | नहीं मिला | Not found |
+| `lastAskedLabel` | पिछला सवाल | Last question |
+| `kbCoverageHeading` | ज्ञान कक्षा | Knowledge base |
+| `kbCropsUnit` | फसलें | crops |
+| `kbDocsUnit` | दस्तावेज़ | documents |
+| `kbLangsUnit` | भाषाएँ | languages |
+| `deviceOnlyNote` | सभी आँकड़े इसी डिवाइस से — कोई डेटा बाहर नहीं जाता। | All stats are from this device — no data leaves it. |
+| `historyEmpty` | अभी कोई इतिहास नहीं है। | No history yet. |
+| `clearAll` | सब हटाएँ | Clear all |
+| `deleteEntry` | इतिहास से हटाएँ | Delete from history |
+| `reopen` | फिर से खोलें | Reopen |
 
 `upstreamNote`, `rateLimitToast`, and `offlineToast` are the doc/server strings
 listed in the table above; the client renders their **server-sent** value.
@@ -349,7 +369,8 @@ all seven answerable chips retrieve a chunk and that #8 does not.
 | Speaking message | React state (message id) | one utterance at a time; `null` = idle |
 | Mic active | React state (`useVoiceInput`) | interim transcript is written into the textarea |
 | Toast | React state + 6 s timer | rate-limit (amber) / offline (danger) only |
-| History / impact | ⏳ localStorage (`ks:*` keys, Phase 5) | cap 50, try/catch, clear-all |
+| Dashboard open | React state (`useState`) | modal visibility only — never persisted |
+| History / impact | `useLocalStorage` (`ks:history:v1`, `ks:impact:v1`) | versioned, cap 50 (newest first), try/catch + in-memory fallback, clear-all, per-item delete; **no analytics, no server storage** |
 | KB, synonyms, rate-limit counters | server (module scope) | never sent to client except top-3 sources |
 
 **No other state exists** — no global store, no server-side user data.
@@ -389,6 +410,26 @@ all seven answerable chips retrieve a chunk and that #8 does not.
 - **Errors:** rate-limit (429) → amber toast "थोड़ा रुकिए…"; offline → red toast
   "कनेक्शन नहीं, दोबारा कोशिश करें"; a stream that ends without `done`/`error`
   is treated as upstream.
+- **Dashboard (FR12):** the header button (no longer a stub) opens a modal with
+  two tabs — **इस डिवाइस का प्रभाव** (asked / answered / refused counters, last
+  question date, and KB coverage `crops · documents · languages` read from the
+  bundled KB) and **इतिहास** (newest-first list, cap 50, per-item ✖, "सब हटाएँ").
+  Every counter is honestly scoped to the device; the KB line carries the "कोई
+  डेटा बाहर नहीं जाता" note. `asked` increments when a question is sent (even if
+  the answer later fails); `answered` only on a non-empty `done`; `refused` only
+  on the refusal path — a refusal is asked + refused, never answered.
+  - **History entry:** `{ id, q, answer, sources[], lang, ts, refused }` in
+    localStorage. The server `done` advisory is stored **verbatim inside
+    `answer`** (lib/types.ts is frozen and the client must not re-author server
+    strings) so a replayed answer still shows its disclaimer.
+  - **Reopen:** clicking a row appends the stored Q&A to the transcript with its
+    sources rebuilt from the bundled KB by id (localized to the entry's `lang`)
+    — **no network call** (privacy claim, PRD §10).
+  - **Modal a11y:** `role="dialog"` + `aria-modal`, Title focus moves into the
+    dialog and back to the header button on close, Esc and backdrop-click close,
+    Tab is trapped, and the page behind is scroll-locked. It is a bottom sheet
+    on phones (`max-w-lg`, scrollable body, safe-area padding) and centered on
+    desktop.
 - **A11y:** labels on all icon buttons, focus rings, `aria-live="polite"` +
   `aria-busy` on the message list, correct `lang` on every text node, and Enter
   sends while Shift+Enter adds a newline (IME composition is ignored, so Hindi

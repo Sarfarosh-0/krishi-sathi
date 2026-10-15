@@ -116,7 +116,10 @@ frameworks beyond Next.js.
     languages).
   - **History** — localStorage `{ q, answer, sources, lang, ts }`, capped at ~50
     entries, clear-all button, click to re-open.
-- Wrapped in `useEffect` + try/catch (Safari private mode can throw).
+- Wrapped in a `useSyncExternalStore` external store + try/catch (Safari private
+  mode can throw on read *and* write); versioned `ks:history:v1` / `ks:impact:v1`
+  keys, cap 50, clear-all + per-item delete, and click-to-reopen that replays
+  locally from the bundled KB (no network).
 - **Built after the first successful deploy**, so a working chat is never at risk.
 
 ---

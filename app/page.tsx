@@ -4,13 +4,32 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import ChatHeader from "@/components/ChatHeader";
 import ChipRow from "@/components/ChipRow";
 import Composer from "@/components/Composer";
+import DashboardModal from "@/components/DashboardModal";
 import MessageList from "@/components/MessageList";
 import Toast from "@/components/Toast";
-import { newMessageId, type ChatMessage } from "@/lib/chat";
+import {
+  answerWithAdvisory,
+  EMPTY_HISTORY,
+  EMPTY_IMPACT,
+  HISTORY_KEY,
+  HISTORY_LIMIT,
+  IMPACT_KEY,
+  newMessageId,
+  sourcesFromIds,
+  type ChatMessage,
+} from "@/lib/chat";
 import { useLang } from "@/lib/hooks/useLang";
+import { useLocalStorage } from "@/lib/hooks/useLocalStorage";
 import { useSpeech } from "@/lib/hooks/useSpeech";
 import { UI_STRINGS } from "@/lib/ui-strings";
-import type { AskErrorBody, Lang, StreamEvent } from "@/lib/types";
+import type {
+  AskErrorBody,
+  HistoryEntry,
+  ImpactStats,
+  KBSource,
+  Lang,
+  StreamEvent,
+} from "@/lib/types";
 
 const MAX_QUESTION_CHARS = 500;
 
@@ -32,9 +51,15 @@ export default function Home() {
   const [draft, setDraft] = useState("");
   const [loading, setLoading] = useState(false);
   const [toast, setToast] = useState<{ message: string; tone: "amber" | "danger" } | null>(null);
+  const [dashboardOpen, setDashboardOpen] = useState(false);
+
+  // Device-local impact + history (FR12). Caps/try-catch live in the hook.
+  const [history, setHistory] = useLocalStorage<HistoryEntry[]>(HISTORY_KEY, EMPTY_HISTORY);
+  const [impact, setImpact] = useLocalStorage<ImpactStats>(IMPACT_KEY, EMPTY_IMPACT);
 
   const abortRef = useRef<AbortController | null>(null);
   const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const dashboardButtonRef = useRef<HTMLButtonElement>(null);
   const { supported: speechSupported, speakingKey, toggle: toggleSpeech, stop: stopSpeech } =
     useSpeech();
 
@@ -88,6 +113,10 @@ export default function Home() {
       stopSpeech(); // a new answer cancels any read-aloud
       setDraft("");
 
+      // A question was asked from this device — count it even if the answer
+      // later fails (FR12; honesty: "asked", not "answered").
+      setImpact((current) => ({ ...current, asked: current.asked + 1, lastTs: Date.now() }));
+
       const assistantId = newMessageId();
       setMessages((previous) => [
         ...previous,
@@ -118,20 +147,48 @@ export default function Home() {
       abortRef.current = controller;
       let terminated = false;
 
+      // Tracked for the device-local history entry at `done` (no server storage).
+      let answerText = "";
+      let collectedSources: KBSource[] = [];
+
       const applyEvent = (event: StreamEvent) => {
         switch (event.type) {
           case "sources":
+            collectedSources = event.sources;
             updateMessage(assistantId, { sources: event.sources });
             break;
           case "token":
+            answerText += event.text;
             updateMessage(assistantId, (current) => ({ text: current.text + event.text }));
             break;
-          case "done":
+          case "done": {
+            const refused = event.refused;
+            // A refusal counts as asked + refused, never answered (FR12).
+            const hasAnswer = refused || answerText.trim().length > 0;
             updateMessage(assistantId, {
-              status: event.refused ? "refused" : "done",
+              status: refused ? "refused" : "done",
               advisory: event.advisory,
             });
+            setImpact((current) => ({
+              ...current,
+              answered: current.answered + (!refused && hasAnswer ? 1 : 0),
+              refused: current.refused + (refused ? 1 : 0),
+            }));
+            if (hasAnswer) {
+              const entry: HistoryEntry = {
+                id: assistantId,
+                q: question,
+                answer: answerWithAdvisory(answerText, event.advisory),
+                sources: collectedSources.map((source) => source.id),
+                lang: messageLang,
+                ts: Date.now(),
+                refused,
+              };
+              // Newest first, oldest dropped past the cap of 50.
+              setHistory((current) => [entry, ...current].slice(0, HISTORY_LIMIT));
+            }
             break;
+          }
           case "error":
             updateMessage(assistantId, { status: "upstream" });
             break;
@@ -230,7 +287,7 @@ export default function Home() {
         setLoading(false);
       }
     },
-    [lang, showToast, stopSpeech, updateMessage]
+    [lang, setHistory, setImpact, showToast, stopSpeech, updateMessage]
   );
 
   const stop = useCallback(() => {
@@ -244,9 +301,68 @@ export default function Home() {
     [send]
   );
 
+  // ------------------------------------------------- dashboard + history (FR12)
+
+  const openDashboard = useCallback(() => setDashboardOpen(true), []);
+
+  const closeDashboard = useCallback(() => {
+    setDashboardOpen(false);
+    dashboardButtonRef.current?.focus(); // return focus to the trigger (a11y)
+  }, []);
+
+  const deleteEntry = useCallback(
+    (id: string) => {
+      setHistory((current) => current.filter((entry) => entry.id !== id));
+    },
+    [setHistory]
+  );
+
+  const clearHistory = useCallback(() => {
+    setHistory([]);
+  }, [setHistory]);
+
+  /** Replay a stored turn into the transcript — localStorage only, no network. */
+  const reopenEntry = useCallback(
+    (entry: HistoryEntry) => {
+      stopSpeech();
+      const assistantId = newMessageId();
+      setMessages((previous) => [
+        ...previous,
+        {
+          id: `${assistantId}-q`,
+          role: "user",
+          lang: entry.lang,
+          question: entry.q,
+          text: entry.q,
+          sources: [],
+          advisory: null,
+          status: "done",
+        },
+        {
+          id: assistantId,
+          role: "assistant",
+          lang: entry.lang,
+          question: entry.q,
+          text: entry.answer, // includes the server advisory, stored verbatim
+          sources: sourcesFromIds(entry.sources, entry.lang),
+          advisory: null,
+          status: entry.refused ? "refused" : "done",
+        },
+      ]);
+      setDashboardOpen(false);
+    },
+    [stopSpeech]
+  );
+
   return (
     <div className="flex h-dvh flex-col">
-      <ChatHeader lang={lang} strings={strings} onLangChange={setLang} />
+      <ChatHeader
+        lang={lang}
+        strings={strings}
+        onLangChange={setLang}
+        onOpenDashboard={openDashboard}
+        dashboardButtonRef={dashboardButtonRef}
+      />
       <ChipRow
         lang={lang}
         label={strings.chipsLabel}
@@ -273,6 +389,18 @@ export default function Home() {
         onStop={stop}
       />
       {toast && <Toast message={toast.message} tone={toast.tone} />}
+      {dashboardOpen && (
+        <DashboardModal
+          lang={lang}
+          strings={strings}
+          impact={impact}
+          history={history}
+          onClose={closeDashboard}
+          onDelete={deleteEntry}
+          onClearAll={clearHistory}
+          onReopen={reopenEntry}
+        />
+      )}
     </div>
   );
 }

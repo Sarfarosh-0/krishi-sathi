@@ -1,5 +1,6 @@
 "use client";
 
+import type { RefObject } from "react";
 import { LayoutDashboard, Sprout } from "lucide-react";
 import type { Lang } from "@/lib/types";
 import type { UIStrings } from "@/lib/ui-strings";
@@ -8,10 +9,20 @@ interface ChatHeaderProps {
   lang: Lang;
   strings: UIStrings;
   onLangChange: (lang: Lang) => void;
+  /** Opens the device-local dashboard modal (FR12). */
+  onOpenDashboard: () => void;
+  /** Focus returns here when the modal closes (a11y). */
+  dashboardButtonRef?: RefObject<HTMLButtonElement | null>;
 }
 
-/** Gradient header: title, language toggle, dashboard button (stub until Phase 5). */
-export default function ChatHeader({ lang, strings, onLangChange }: ChatHeaderProps) {
+/** Gradient header: title, language toggle, dashboard button. */
+export default function ChatHeader({
+  lang,
+  strings,
+  onLangChange,
+  onOpenDashboard,
+  dashboardButtonRef,
+}: ChatHeaderProps) {
   return (
     <header className="header-gradient text-surface shadow-card">
       <div className="mx-auto flex w-full max-w-3xl items-center gap-2 px-4 py-3">
@@ -47,13 +58,15 @@ export default function ChatHeader({ lang, strings, onLangChange }: ChatHeaderPr
           ))}
         </div>
 
-        {/* Stub: Phase 5 wires the modal and removes `disabled`. */}
+        {/* Opens the device-local dashboard + history modal (FR12). */}
         <button
+          ref={dashboardButtonRef}
           type="button"
-          disabled
-          aria-label={`${strings.dashboard} — ${strings.dashboardSoon}`}
-          title={strings.dashboardSoon}
-          className="flex size-11 shrink-0 items-center justify-center rounded-button text-surface opacity-70"
+          lang={lang}
+          onClick={onOpenDashboard}
+          aria-haspopup="dialog"
+          aria-label={strings.dashboard}
+          className="flex size-11 shrink-0 items-center justify-center rounded-button text-surface transition-colors hover:bg-black/15 focus-visible:ring-2 focus-visible:ring-surface"
         >
           <LayoutDashboard className="size-5" aria-hidden="true" />
         </button>

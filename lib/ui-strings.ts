@@ -11,7 +11,6 @@ import type { Lang } from "./types";
 export interface UIStrings {
   tagline: string;
   dashboard: string;
-  dashboardSoon: string;
   langToggleLabel: string;
   chipsLabel: string;
   emptyTitle: string;
@@ -34,6 +33,23 @@ export interface UIStrings {
   assistantLabel: string;
   retry: string;
   stopped: string;
+  // Dashboard & history (Phase 5, DESIGN §1.3)
+  tabImpact: string;
+  tabHistory: string;
+  close: string;
+  askedLabel: string;
+  answeredLabel: string;
+  refusedLabel: string;
+  lastAskedLabel: string;
+  kbCoverageHeading: string;
+  kbCropsUnit: string;
+  kbDocsUnit: string;
+  kbLangsUnit: string;
+  deviceOnlyNote: string;
+  historyEmpty: string;
+  clearAll: string;
+  deleteEntry: string;
+  reopen: string;
   upstreamNote: string; // (DESIGN §5)
   rateLimitToast: string; // (DESIGN §5)
   offlineToast: string; // (DESIGN §5)
@@ -43,7 +59,6 @@ export const UI_STRINGS: Record<Lang, UIStrings> = {
   hi: {
     tagline: "छोटे किसानों के लिए AI सलाहकार",
     dashboard: "डैशबोर्ड",
-    dashboardSoon: "डैशबोर्ड जल्द आएगा",
     langToggleLabel: "भाषा बदलें",
     chipsLabel: "सुझाए गए सवाल",
     emptyTitle: "नमस्ते! मैं आपका कृषि सहायक हूँ।",
@@ -66,6 +81,22 @@ export const UI_STRINGS: Record<Lang, UIStrings> = {
     assistantLabel: "कृषि साथी का जवाब",
     retry: "दोबारा कोशिश करें",
     stopped: "जवाब रोक दिया गया।",
+    tabImpact: "इस डिवाइस का प्रभाव",
+    tabHistory: "इतिहास",
+    close: "बंद करें",
+    askedLabel: "सवाल पूछे",
+    answeredLabel: "जवाब मिले",
+    refusedLabel: "नहीं मिला",
+    lastAskedLabel: "पिछला सवाल",
+    kbCoverageHeading: "ज्ञान कक्षा",
+    kbCropsUnit: "फसलें",
+    kbDocsUnit: "दस्तावेज़",
+    kbLangsUnit: "भाषाएँ",
+    deviceOnlyNote: "सभी आँकड़े इसी डिवाइस से — कोई डेटा बाहर नहीं जाता।",
+    historyEmpty: "अभी कोई इतिहास नहीं है।",
+    clearAll: "सब हटाएँ",
+    deleteEntry: "इतिहास से हटाएँ",
+    reopen: "फिर से खोलें",
     upstreamNote:
       "जवाब तैयार नहीं हो सका। नीचे ज्ञान-कोश से मिली जानकारी दी गई है।",
     rateLimitToast: "थोड़ा रुकिए, फिर कोशिश करें।",
@@ -74,7 +105,6 @@ export const UI_STRINGS: Record<Lang, UIStrings> = {
   en: {
     tagline: "AI advisor for smallholder farmers",
     dashboard: "Dashboard",
-    dashboardSoon: "Dashboard coming soon",
     langToggleLabel: "Change language",
     chipsLabel: "Suggested questions",
     emptyTitle: "Hello! I'm your farming assistant.",
@@ -97,6 +127,22 @@ export const UI_STRINGS: Record<Lang, UIStrings> = {
     assistantLabel: "Krishi Sathi's answer",
     retry: "Try again",
     stopped: "Answer stopped.",
+    tabImpact: "Impact from this device",
+    tabHistory: "History",
+    close: "Close",
+    askedLabel: "Questions asked",
+    answeredLabel: "Answered",
+    refusedLabel: "Not found",
+    lastAskedLabel: "Last question",
+    kbCoverageHeading: "Knowledge base",
+    kbCropsUnit: "crops",
+    kbDocsUnit: "documents",
+    kbLangsUnit: "languages",
+    deviceOnlyNote: "All stats are from this device — no data leaves it.",
+    historyEmpty: "No history yet.",
+    clearAll: "Clear all",
+    deleteEntry: "Delete from history",
+    reopen: "Reopen",
     upstreamNote:
       "Could not generate an answer. Below is what I found in the knowledge base.",
     rateLimitToast: "Please wait a moment and try again.",
