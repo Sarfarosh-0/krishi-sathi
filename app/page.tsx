@@ -50,7 +50,9 @@ export default function Home() {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [draft, setDraft] = useState("");
   const [loading, setLoading] = useState(false);
-  const [toast, setToast] = useState<{ message: string; tone: "amber" | "danger" } | null>(null);
+  const [toast, setToast] = useState<{ message: string; tone: "amber" | "danger"; lang: Lang } | null>(
+    null
+  );
   const [dashboardOpen, setDashboardOpen] = useState(false);
 
   // Device-local impact + history (FR12). Caps/try-catch live in the hook.
@@ -77,13 +79,16 @@ export default function Home() {
     []
   );
 
-  const showToast = useCallback((message: string, tone: "amber" | "danger") => {
-    setToast({ message, tone });
-    if (toastTimer.current) {
-      clearTimeout(toastTimer.current);
-    }
-    toastTimer.current = setTimeout(() => setToast(null), 6000);
-  }, []);
+  const showToast = useCallback(
+    (message: string, tone: "amber" | "danger", toastLang: Lang) => {
+      setToast({ message, tone, lang: toastLang });
+      if (toastTimer.current) {
+        clearTimeout(toastTimer.current);
+      }
+      toastTimer.current = setTimeout(() => setToast(null), 6000);
+    },
+    []
+  );
 
   const updateMessage = useCallback(
     (
@@ -212,7 +217,7 @@ export default function Home() {
             /* non-JSON error body */
           }
           if (response.status === 429 && body?.error === "rate_limit") {
-            showToast(contentStrings.rateLimitToast, "amber");
+            showToast(contentStrings.rateLimitToast, "amber", messageLang);
           }
           updateMessage(assistantId, { status: "upstream" });
           return;
@@ -280,7 +285,7 @@ export default function Home() {
           });
         } else {
           updateMessage(assistantId, { status: "upstream" });
-          showToast(contentStrings.offlineToast, "danger");
+          showToast(contentStrings.offlineToast, "danger", messageLang);
         }
       } finally {
         abortRef.current = null;
@@ -388,7 +393,7 @@ export default function Home() {
         onSubmit={() => void send(draft)}
         onStop={stop}
       />
-      {toast && <Toast message={toast.message} tone={toast.tone} />}
+      {toast && <Toast message={toast.message} tone={toast.tone} lang={toast.lang} />}
       {dashboardOpen && (
         <DashboardModal
           lang={lang}

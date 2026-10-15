@@ -66,7 +66,7 @@ export default function ChatHeader({
           onClick={onOpenDashboard}
           aria-haspopup="dialog"
           aria-label={strings.dashboard}
-          className="flex size-11 shrink-0 items-center justify-center rounded-button text-surface transition-colors hover:bg-black/15 focus-visible:ring-2 focus-visible:ring-surface"
+          className="flex size-11 shrink-0 items-center justify-center rounded-button text-surface transition-colors hover:bg-black/15"
         >
           <LayoutDashboard className="size-5" aria-hidden="true" />
         </button>

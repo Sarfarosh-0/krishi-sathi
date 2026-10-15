@@ -156,7 +156,7 @@ export default function DashboardModal({
             lang={lang}
             onClick={onClose}
             aria-label={strings.close}
-            className="flex size-10 shrink-0 items-center justify-center rounded-button text-muted hover:bg-cream focus-visible:ring-2 focus-visible:ring-primary"
+            className="flex size-10 shrink-0 items-center justify-center rounded-button text-muted hover:bg-cream"
           >
             <X className="size-5" aria-hidden="true" />
           </button>

@@ -86,7 +86,7 @@ export default function Composer({
           maxLength={MAX_QUESTION_CHARS}
           placeholder={voice.listening ? strings.micListening : strings.placeholder}
           aria-label={strings.placeholder}
-          className="min-h-12 flex-1 resize-none rounded-button border border-black/10 bg-cream px-3 py-3 text-ink placeholder:text-muted focus:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:opacity-60"
+          className="min-h-12 flex-1 resize-none rounded-button border border-black/10 bg-cream px-3 py-3 text-ink placeholder:text-muted disabled:opacity-60"
         />
 
         {loading ? (

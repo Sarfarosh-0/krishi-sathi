@@ -52,3 +52,12 @@ body {
   font-size: 17px;
   line-height: 1.6;
 }
+
+/* Visible keyboard focus everywhere (DESIGN §7 a11y). One consistent ring
+   instead of per-component utilities, so every interactive element gets it —
+   including icon-only buttons that previously had no focus style. The ink
+   outline stays legible on the green/amber header as well as on cards. */
+:focus-visible {
+  outline: 2px solid var(--color-ink);
+  outline-offset: 2px;
+}

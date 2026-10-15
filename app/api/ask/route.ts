@@ -340,17 +340,24 @@ export async function POST(request: Request): Promise<Response> {
     ]);
   }
 
-  const apiKey = process.env.GEMINI_API_KEY;
-  if (!apiKey) {
-    console.error("[api/ask] GEMINI_API_KEY is not set.");
-    return ndjsonBody([{ type: "error", error: "upstream" }]);
-  }
-
   const sources: KBSource[] = results.map(({ chunk }) => ({
     id: chunk.id,
     title: lang === "hi" ? chunk.title : chunk.titleEn,
     text: lang === "hi" ? chunk.text : chunk.textEn,
   }));
+
+  // A missing key is a configuration failure, but the retrieved snippets are
+  // still valid and DESIGN §5's snippet-fallback card needs them — so send
+  // `sources` first (exactly like the live-model path), then the single
+  // `error` line, so the graceful fallback has content (FR10).
+  const apiKey = process.env.GEMINI_API_KEY;
+  if (!apiKey) {
+    console.error("[api/ask] GEMINI_API_KEY is not set.");
+    return ndjsonBody([
+      { type: "sources", sources },
+      { type: "error", error: "upstream" },
+    ]);
+  }
 
   const prompt = buildPrompt(question, lang, sources);
   const stream = streamAnswer(apiKey, prompt, sources, lang, request.signal);

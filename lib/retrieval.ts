@@ -172,11 +172,6 @@ export function scoreTerms(terms: ReadonlySet<string>, chunk: KBChunk): number {
   return score;
 }
 
-/** Convenience wrapper for a single query/chunk pair (used by tests). */
-export function scoreChunk(query: string, chunk: KBChunk): number {
-  return scoreTerms(expandQuery(query), chunk);
-}
-
 export interface RetrievalResult {
   chunk: KBChunk;
   score: number;

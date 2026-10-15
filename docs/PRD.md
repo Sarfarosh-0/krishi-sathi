@@ -87,7 +87,7 @@ models, no database, no tracking.
 | FR10 | Fallback: on API timeout/429/5xx show retrieved KB snippets + friendly message, never a crash | Must |
 | FR11 | Client + server rate limit (10 req/min/IP) | Must |
 | FR12 | Dashboard: device-local impact counter + question history (localStorage, cap 50, clear-all) | Should |
-| FR13 | PWA manifest (installable, home-screen) | Should |
+| FR13 | PWA manifest (installable, home-screen; SVG + 192/512 PNG + maskable 512 + iOS `apple-icon`) | Should |
 | FR14 | Light markdown rendering of answers (bold, bullets — text nodes only) | Could |
 | FR15 | Seasonal tip banner / crop dropdown / dark mode | Could (stretch) |
 
@@ -183,8 +183,11 @@ API down (snippet fallback), rate-limited (friendly Hindi notice), offline
 - Prompt-injection fence; model output rendered as text only.
 - Key hygiene: `.env.local` gitignored, `.env.example` with placeholders, key
   never in client bundles.
-- Origin/CORS check + security headers (`X-Content-Type-Options`,
-  `X-Frame-Options`, basic CSP).
+- Origin/CORS check + security headers on **every** response (`next.config.ts`):
+  CSP (`default-src 'self'`, `'unsafe-inline'` for Next's bootstrap/inline styles,
+  no `'unsafe-eval'` outside dev — a nonce policy would force dynamic rendering
+  and is deliberately avoided, so `frame-ancestors 'self'`), `X-Content-Type-Options:
+  nosniff`, `X-Frame-Options: SAMEORIGIN`.
 - Privacy: no accounts, no analytics, no server-side storage of questions;
   history and counters stay in the device's localStorage (honestly labelled as
   device-local, not global).

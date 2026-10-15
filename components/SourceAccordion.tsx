@@ -36,7 +36,7 @@ export default function SourceAccordion({ sources, lang, strings }: SourceAccord
                 type="button"
                 lang={lang}
                 aria-expanded={open}
-                aria-label={open ? strings.sourceCollapse : strings.sourceExpand}
+                aria-label={`${open ? strings.sourceCollapse : strings.sourceExpand}: ${source.title}`}
                 onClick={() => setOpenId(open ? null : source.id)}
                 className="flex w-full items-center gap-2 rounded-button border border-primary/25 bg-primary/5 px-3 py-2 text-left text-sm text-ink"
               >

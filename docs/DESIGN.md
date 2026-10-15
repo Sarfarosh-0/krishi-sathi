@@ -406,7 +406,9 @@ all seven answerable chips retrieve a chunk and that #8 does not.
 - **Refusal:** amber card (amber border, cream bg) + referral text, no `sources`
   line, no Gemini call; ⚠️ glyph above the text; never red.
 - **Upstream:** snippet-fallback card (amber) + "दोबारा कोशिश करें" retry, which
-  re-sends the original question.
+  re-sends the original question. The route emits `sources` **before** the model
+  call — and before a missing-key `error` — so the card always has snippets to
+  show (FR10).
 - **Errors:** rate-limit (429) → amber toast "थोड़ा रुकिए…"; offline → red toast
   "कनेक्शन नहीं, दोबारा कोशिश करें"; a stream that ends without `done`/`error`
   is treated as upstream.
@@ -430,7 +432,8 @@ all seven answerable chips retrieve a chunk and that #8 does not.
     Tab is trapped, and the page behind is scroll-locked. It is a bottom sheet
     on phones (`max-w-lg`, scrollable body, safe-area padding) and centered on
     desktop.
-- **A11y:** labels on all icon buttons, focus rings, `aria-live="polite"` +
+- **A11y:** labels on all icon buttons, one global `:focus-visible` ring
+  (2px ink outline, 2px offset — `app/globals.css`), `aria-live="polite"` +
   `aria-busy` on the message list, correct `lang` on every text node, and Enter
   sends while Shift+Enter adds a newline (IME composition is ignored, so Hindi
   transliteration is not submitted early).

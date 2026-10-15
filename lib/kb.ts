@@ -27,8 +27,3 @@ export function getChunks(): readonly KBChunk[] {
   }
   return chunks;
 }
-
-/** Chunk metadata — used for the device-local KB coverage stats (DESIGN §1.3). */
-export function getMeta(): KBMeta {
-  return file.meta;
-}
