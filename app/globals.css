@@ -1,0 +1,54 @@
+@import "tailwindcss";
+
+/*
+ * Design tokens — docs/DESIGN.md §2.
+ * Declared in @theme so each token is available both as a Tailwind utility
+ * (bg-primary, text-ink, rounded-card) and as a CSS variable
+ * (var(--color-primary)) for the plain-CSS rules further down.
+ */
+@theme {
+  --color-primary: #16a34a;      /* buttons, user bubble, links */
+  --color-primary-dark: #15803d; /* hover / pressed */
+  --color-soil: #8b5a2b;         /* secondary accents, icons */
+  --color-harvest: #f59e0b;      /* refusal card, highlights */
+  --color-cream: #faf7f2;        /* page background */
+  --color-surface: #ffffff;      /* cards, assistant bubble */
+  --color-ink: #1c1917;          /* body text (max contrast) */
+  --color-muted: #78716c;        /* timestamps, meta */
+  --color-danger: #dc2626;       /* network toast only — never the refusal card */
+
+  /* cards/chips 12px · buttons 10px · bubbles 16px */
+  --radius-card: 12px;
+  --radius-button: 10px;
+  --radius-bubble: 16px;
+
+  --shadow-card: 0 1px 3px rgb(0 0 0 / 0.08), 0 4px 12px rgb(0 0 0 / 0.05);
+
+  /* Font variables are attached in app/layout.tsx via next/font. Both families
+     share one stack: Latin text falls through to Inter, Devanagari text to
+     Noto Sans Devanagari, so mixed hi/en copy renders correctly without
+     per-block font overrides. */
+  --font-sans: var(--font-inter), var(--font-noto-devanagari), ui-sans-serif,
+    system-ui, sans-serif;
+}
+
+/* The single green → amber gradient. Header/hero only (DESIGN §1, §2). */
+@utility header-gradient {
+  background-image: linear-gradient(90deg, #16a34a, #f59e0b);
+}
+
+/* Base type — 16px body, 1.6 line-height (Hindi needs air). Solid surfaces
+   only: no blur, no translucency (readable outdoors, fast on low-end phones). */
+body {
+  background-color: var(--color-cream);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  font-size: 16px;
+  line-height: 1.6;
+}
+
+/* Answer copy runs one step larger than body text. */
+.answer-text {
+  font-size: 17px;
+  line-height: 1.6;
+}

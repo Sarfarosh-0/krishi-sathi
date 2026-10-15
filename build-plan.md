@@ -253,7 +253,7 @@ deploy name availability → have a fallback name ready.
 
 | Phase | Status | Completed on | Notes |
 |---|---|---|---|
-| 1 Setup & config | ⬜ not started | — | |
+| 1 Setup & config | ✅ done | 2026-10-15 | Next 16.4.1 + TS + Tailwind 4 + Turbopack (generator defaults); `@google/genai` 2.30.0 + `lucide-react` 1.57.0 pinned in lockfile; Inter + Noto Sans Devanagari + §2 tokens; `lib/types.ts` verified byte-identical to DESIGN §4; dev/build/lint green |
 | 2 Data layer (KB/retrieval/tests) | ⬜ not started | — | |
 | 3 Backend `/api/ask` | ⬜ not started | — | needs B1 |
 | 4 Chat UI | ⬜ not started | — | |
@@ -265,13 +265,13 @@ Legend: ⬜ not started · 🔄 in progress · ✅ done (criteria verified) · �
 
 ## Log
 
-- *(append one line per phase: date · phase · what shipped · what was learned)*
+- 2026-10-15 · Phase 1 · Scaffolded Next.js 16.4.1 (App Router, TS, Tailwind 4, Turbopack) in place, installed `@google/genai` 2.30.0 + `lucide-react` 1.57.0, wired Inter + Noto Sans Devanagari and the DESIGN §2 design tokens, added `.env.example`, `app/manifest.ts` and the DESIGN §4 shared types · Learned: Next 16 removed `next lint` (ESLint CLI now; `next build` no longer lints) and the scaffold's `.env*` ignore rule also swallowed the required `.env.example`, so a `!.env.example` exception was needed.
 
 ## Blockers
 
 | ID | Blocker | Impact | Status |
 |---|---|---|---|
 | B1 | Google AI Studio API key not yet confirmed available | Blocks Phase 3 local test & Phase 7 deploy | ⬜ open |
-| B2 | GitHub + Vercel accounts not confirmed | Blocks Phase 7 | ⬜ open |
+| B2 | GitHub + Vercel accounts not confirmed | Blocks Phase 7 | ⬜ open — GitHub confirmed (origin → `github.com/Sarfarosh-0/krishi-sathi.git`); Vercel still unconfirmed |
 | B3 | Final project name still placeholder ("Krishi Sathi") | Blocks Phase 7 README/deploy naming | ⬜ open |
 | B4 | MVP deadline 12 PM confirmed by human, exact date assumed day-2 of event | Timeline only | ✅ resolved (human confirmed 10 hrs) |
