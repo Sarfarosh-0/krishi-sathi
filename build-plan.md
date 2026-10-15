@@ -108,7 +108,9 @@ eval pass-rate <80%, tune weights/threshold (don't add embeddings).
 `.env.local` for local test, later in Vercel dashboard).
 
 **Scope / tasks:**
-1. `app/api/ask/route.ts` with `export const runtime = "nodejs"`.
+1. `app/api/ask/route.ts` on the Node runtime. **Do not export the `runtime`
+   segment config** — `cacheComponents` is enabled and Next 16 rejects it with a
+   hard build error (Node is the default; Edge is deprecated).
 2. `app/api/health/route.ts`: GET → `200 { ok: true }`, no Gemini call (warm-up).
 3. Input validation: POST-only (405), JSON body, non-empty question, truncate >
    500 chars, `lang ∈ {hi,en}` else 400.
@@ -121,10 +123,17 @@ eval pass-rate <80%, tune weights/threshold (don't add embeddings).
    instructions" + user question. **Model is told NOT to append the advisory**
    (server owns it — no duplication).
 7. `@google/genai` `generateContentStream`: `gemma-4-26b-a4b-it`, temp 0.3,
-   bounded output, timeout wrapper (~15 s).
-8. NDJSON response assembly per DESIGN §5: `token`* → `sources` → `done`
-   (localized advisory in `done`); mid-stream Gemini failure → single
-   `error:"upstream"` line; pre-stream failures stay plain JSON (400/405/429).
+   `maxOutputTokens` 2048, 55 s in-route deadline + `maxDuration = 60`.
+   **Verified constraints:** this model rejects `config.systemInstruction` (so the
+   rules go in `contents`), and `thinkingConfig.thinkingBudget` is unsupported, so
+   thinking cannot be capped and real answers take **15–33 s**. Thinking tokens are
+   charged to `maxOutputTokens`. Retry up to 4 attempts, but only while no `token`
+   has been streamed and the deadline still allows it (the model returns fast 5xx
+   intermittently — reproducible with the plain SDK, so not a bundling issue).
+8. NDJSON response assembly per DESIGN §5: `sources` → `token`* → `done`
+   (sources **first**, so the snippet-fallback card has content if the model
+   fails; localized advisory in `done`); upstream failure → single
+   `error:"upstream"` line; pre-stream failures stay plain JSON (400/403/405/429).
 9. Origin/CORS check for same-origin deployment.
 10. `scripts/smoke-api.mjs`: curl-style local test of all contract paths
     (health, success stream, refusal stream, 400, 405, 429, upstream drill).
@@ -262,7 +271,7 @@ deploy name availability → have a fallback name ready.
 |---|---|---|---|
 | 1 Setup & config | ✅ done | 2026-10-15 | Next 16.4.1 + TS + Tailwind 4 + Turbopack (generator defaults); `@google/genai` 2.30.0 + `lucide-react` 1.57.0 pinned in lockfile; Inter + Noto Sans Devanagari + §2 tokens; `lib/types.ts` verified byte-identical to DESIGN §4; dev/build/lint green |
 | 2 Data layer (KB/retrieval/tests) | ✅ done | 2026-10-15 | 14 bilingual chunks (all 5 crops + neem-safety + pre-rain + out-of-scope) — every chunk 80–150 words in both languages, `लक्षण/उपाय/सावधानी` structure, source line embedded in the text; `lib/synonyms.ts` (36 groups incl. Roman transliterations); `lib/kb.ts` module-scope-cached JSON loader; `lib/retrieval.ts` pure scorer (crop 3 > tag 2 > token 1, threshold 5); `npm run test` = `node --test`; **11/11 tests, 15/15 evals, 3/3 refusals**; build + lint green; bundled-KB import proven (prerender executed `getChunks()` → 14) |
-| 3 Backend `/api/ask` | ⬜ not started | — | needs B1 |
+| 3 Backend `/api/ask` | ✅ done | 2026-10-15 | `app/api/ask/route.ts` (NDJSON `sources` → `token`* → `done`) + `app/api/health/route.ts` (200, made dynamic with `connection()` so it really warms the function, never calls Gemini); POST-only + 400/403/405/429; same-origin check; 10 req/min/IP in-memory limiter; retrieval-gated refusal that provably makes **zero Gemini calls**; prompt keeps the `<<<CONTEXT>>>` fence with rules in `contents` (the model **rejects** `systemInstruction`); `maxOutputTokens` 2048 + 55 s in-route deadline + `maxDuration = 60`; retry ≤4 attempts only while nothing has been streamed; `scripts/smoke-api.mjs` = **22/22 normal**, **17/17 upstream drill**; retrieval 11/11; lint + build green |
 | 4 Chat UI | ⬜ not started | — | |
 | 5 Dashboard & history | ⬜ not started | — | |
 | 6 Integration & polish | ⬜ not started | — | |
@@ -274,12 +283,14 @@ Legend: ⬜ not started · 🔄 in progress · ✅ done (criteria verified) · �
 
 - 2026-10-15 · Phase 1 · Scaffolded Next.js 16.4.1 (App Router, TS, Tailwind 4, Turbopack) in place, installed `@google/genai` 2.30.0 + `lucide-react` 1.57.0, wired Inter + Noto Sans Devanagari and the DESIGN §2 design tokens, added `.env.example`, `app/manifest.ts` and the DESIGN §4 shared types · Learned: Next 16 removed `next lint` (ESLint CLI now; `next build` no longer lints) and the scaffold's `.env*` ignore rule also swallowed the required `.env.example`, so a `!.env.example` exception was needed.
 - 2026-10-15 · Phase 2 · Authored the 14-chunk sample KB (human-approved: clearly-labelled KVK-style sample guidance, no brand names or invented dosages), `lib/synonyms.ts`, cached `lib/kb.ts`, pure `lib/retrieval.ts`, `evals/evals.json` and the `node:test` retrieval suite; tuned weights/threshold until 15/15 evals and 3/3 refusals passed · Learned: (1) Node 24 strips TS types natively but its ESM resolver still rejects extensionless imports, so `node --test` runs the real `.ts` modules via a ~20-line resolve hook — no new dependency, app code stays idiomatic; (2) `लक्षण / उपाय / सावधानी` appear in *every* chunk, so those labels (and general question words) must be filtered from the expanded token set or every score inflates; (3) the `out_of_scope` chunk must be excluded from retrieval candidates, otherwise "मछली पालन की लागत" would be *answered* from the referral doc instead of hitting the refusal path.
+- 2026-10-15 · Phase 3 · Built the NDJSON backend (`app/api/ask/route.ts` + `app/api/health/route.ts`) with validation/rate-limit/same-origin guards, retrieval-gated refusal and `scripts/smoke-api.mjs`; verified **22/22 normal + 17/17 upstream drill**, retrieval 11/11, lint + build green · Learned: (1) the pinned model **rejects `config.systemInstruction`** (500/503), so the system rules must live in `contents` — a "nicety" many SDK examples assume; (2) it is a **thinking model** whose `thinkingConfig.thinkingBudget` is **unsupported** ("Thinking budget is not supported for this model"), so real answers take **15–33 s** (605–1446 thinking tokens) and thinking is charged to `maxOutputTokens` — hence task 7's "~15 s timeout" became a 55 s deadline + `maxDuration = 60`, and a too-small token cap silently returns an *empty* answer; (3) with `cacheComponents` enabled, Next 16 **rejects the `runtime` segment config** outright (build error) — Node is the default and Edge is deprecated, so the export is simply omitted and AGENTS #6 was corrected; (4) `sources` must be emitted **before** the model call, otherwise DESIGN §5's snippet-fallback card has nothing to show when the model fails; (5) the API returns **fast intermittent 5xx** — reproduced with the plain SDK *outside* Next, so it is vendor-side, not bundling; because failures cost ~1 s the route retries up to 4 times, while permanent 4xx must **not** be retried (one 400 would otherwise burn all 4 attempts).
 
 ## Blockers
 
 | ID | Blocker | Impact | Status |
 |---|---|---|---|
-| B1 | Google AI Studio API key not yet confirmed available | Blocks Phase 3 local test & Phase 7 deploy | ⬜ open — human will add it later; Phase 3 is the deadline, Phase 2 needs no key |
+| B1 | Google AI Studio API key not yet confirmed available | Blocks Phase 3 local test & Phase 7 deploy | ✅ resolved — human added `GEMINI_API_KEY` to `.env.local` (2026-10-15) and the route was verified against the live API; Phase 7 still needs it added in the Vercel dashboard |
 | B2 | GitHub + Vercel accounts not confirmed | Blocks Phase 7 | ⬜ open — GitHub confirmed (origin → `github.com/Sarfarosh-0/krishi-sathi.git`); Vercel deploy deliberately deferred by human to Phase 7 |
 | B3 | Final project name still placeholder ("Krishi Sathi") | Blocks Phase 7 README/deploy naming | ✅ resolved — human locked "Krishi Sathi (कृषि साथी)" (2026-10-15) |
 | B4 | MVP deadline 12 PM confirmed by human, exact date assumed day-2 of event | Timeline only | ✅ resolved (human confirmed 10 hrs) |
+| B5 | `gemma-4-26b-a4b-it` returns **fast 5xx intermittently** (observed as bad as 5 of 6 calls failing; reproduced with the plain SDK *outside* Next, so it is vendor-side, not our code) | A demo answer can fall back to the `error:"upstream"` + sources-fallback card; the model is pinned by AGENTS #17 and cannot be swapped | ⚠️ mitigated — the route retries ≤4 attempts while nothing has been streamed (failures cost ~1 s) and every path still ends cleanly. Worth re-checking the key's quota/tier (and the model's status) before the live demo |

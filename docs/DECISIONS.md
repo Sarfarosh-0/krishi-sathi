@@ -93,7 +93,7 @@ optional stretch and is **not** promised.
 
 | Layer | Choice |
 |---|---|
-| Framework | Next.js (App Router) + TypeScript — `app/page.tsx` UI, `app/api/ask/route.ts` backend (`export const runtime = "nodejs"`) |
+| Framework | Next.js (App Router) + TypeScript — `app/page.tsx` UI, `app/api/ask/route.ts` backend (Node runtime, the Next 16 default; the `runtime` segment config is rejected because `cacheComponents` is enabled) |
 | Styling / icons | Tailwind CSS · Lucide React |
 | AI SDK | `@google/genai` → `gemma-4-26b-a4b-it` via Gemini API |
 | KB | `kb/crop-docs.json` bundled (no database) |

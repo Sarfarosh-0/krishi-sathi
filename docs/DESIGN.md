@@ -181,7 +181,10 @@ export interface ImpactStats {
 
 ## 5. API contract
 
-Two routes, both Node runtime (`export const runtime = "nodejs"`).
+Two routes, both on the Node runtime — the Next 16 default. The `runtime` segment
+config is deliberately **not** exported: `cacheComponents` is enabled in
+`next.config.ts` and Next 16 rejects it at build time (the Edge runtime is
+deprecated anyway).
 
 ### `GET /api/health`
 
@@ -194,21 +197,30 @@ Response: `200 { "ok": true }`. No auth, no side effects, no Gemini call.
 `application/x-ndjson`, one JSON event per line, in this order:
 
 ```
+{"type":"sources","sources":[…]}                   ← exactly once, first (before the model runs)
 {"type":"token","text":"गेहूँ में पीली इल्टी…"}   ← 0..n lines (streamed from Gemma)
-{"type":"sources","sources":[…]}                   ← exactly once, before done
 {"type":"done","lang":"hi","refused":false,
  "advisory":"यह सामान्य सलाह है…"}                 ← terminates stream
 ```
 
-- **Refusal (below threshold, no Gemini call):** zero `token` lines; single
-  `sources` line is omitted (`sources: []`); `done` has `refused: true` and the
-  localized refusal message is delivered as one `token` line before `done`.
+`sources` goes out **before** the model call on purpose: the pinned model fails
+intermittently, and the snippet-fallback card below can only show something if
+the sources already reached the client.
+
+- **Refusal (below threshold, no Gemini call):** no `sources` line at all; the
+  localized refusal message is delivered as **exactly one** `token` line, then
+  `done` with `refused: true` and the localized advisory. No model-generated
+  tokens, because no model call happens.
 - **Advisory ownership:** the **server** emits the advisory (localized per
   `lang`) as part of `done`; the prompt instructs the model **not** to append it
   — never duplicated.
-- **Upstream failure mid-stream** (Gemini timeout/429/5xx after headers sent):
-  one `{"type":"error","error":"upstream"}` line, then close. Client shows the
-  snippet-fallback card from whatever `sources`/`token` lines arrived.
+- **Upstream failure** (Gemini 429/5xx/transport/timeout): the route retries, but
+  **only** while no `token` line has been sent, the error looks transient, and the
+  55 s deadline still leaves room for another attempt. The pinned model returns
+  fast 5xx often, so retries are cheap and materially improve reliability. If
+  every attempt fails: one `{"type":"error","error":"upstream"}` line, then close.
+  The client shows the snippet-fallback card — which works because `sources`
+  already arrived.
 - **Stream ends without `done`/`error`** (network drop): client treats as
   `upstream` error.
 - Each line is a single `\n`-terminated JSON object; no other framing.
@@ -217,9 +229,25 @@ Response: `200 { "ok": true }`. No auth, no side effects, no Gemini call.
 
 | Case | Status | Body |
 |---|---|---|
-| Bad input (empty / non-JSON / question > 500 chars untruncatable / bad `lang`) | 400 | `AskErrorBody` (`bad_input`) |
+| Bad input (empty / non-JSON / missing `question` / bad `lang`) | 400 | `AskErrorBody` (`bad_input`) |
 | Non-POST | 405 | `AskErrorBody`-shaped or empty |
 | Rate limited (10 req/min/IP, in-memory, **best-effort per serverless instance** — not global) | 429 | `AskErrorBody` (`rate_limit`) |
+| Cross-site `Origin` header (the route is same-origin only) | 403 | empty |
+
+Questions longer than 500 characters are **truncated**, not rejected.
+
+**Model constraints (verified against the live API — do not "fix" these):**
+
+- `gemma-4-26b-a4b-it` **rejects `config.systemInstruction`** (500/503), so the
+  system rules are folded into `contents`.
+- It is a **thinking model** and `thinkingConfig.thinkingBudget` returns
+  `400 "Thinking budget is not supported for this model."` — thinking cannot be
+  capped, so a real answer takes **15–33 s** (605–1446 thinking tokens).
+- Thinking tokens are charged to `maxOutputTokens`, so the cap must be generous
+  (2048) or the answer comes back empty.
+- The API returns **fast 5xx** intermittently (~1 s per failure, reproducible with
+  the plain SDK outside Next, so it is not a bundling issue). Hence the retry
+  loop and `export const maxDuration = 60`.
 
 Rules: client never sees Gemini errors verbatim (only `"upstream"`); the refusal
 threshold check runs **before** any Gemini call; the scope-documentation chunk

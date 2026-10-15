@@ -78,7 +78,11 @@ implementation · open-source AI use · completeness.
    a task done.
 5. Update `docs/PRD.md` / `docs/DESIGN.md` in the same change if behavior,
    types, or the API contract change.
-6. Keep `runtime = "nodejs"` exported on the API route.
+6. Do **not** add `export const runtime = "nodejs"` to a route. `cacheComponents`
+   is enabled in `next.config.ts`, and Next 16 rejects that segment config with a
+   hard build error. Node is the **default** runtime and Edge is deprecated in
+   Next 16, so omitting it is equivalent — and `@google/genai` must never be
+   called from an Edge/client bundle.
 7. Use the shared types in `lib/types.ts` on both client and server — do not
    duplicate interfaces.
 8. Write plain, readable code with brief comments; ES6+, semantic HTML,
