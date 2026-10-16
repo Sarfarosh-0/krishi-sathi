@@ -16,6 +16,7 @@ export const maxDuration = 60;
 
 const MODEL = "gemma-4-26b-a4b-it";
 const MAX_QUESTION_CHARS = 500; // PRD: longer questions are truncated, not rejected
+const MAX_BODY_BYTES = 8_192; // the question is capped at 500 chars; a larger body is abuse
 const MAX_OUTPUT_TOKENS = 2048; // must cover thinking tokens AND the answer
 const TOP_CHUNKS = 3;
 const UPSTREAM_DEADLINE_MS = 55_000;
@@ -176,6 +177,9 @@ async function attemptOnce(
   signal: AbortSignal,
   onText: (text: string) => void
 ): Promise<void> {
+  if (signal.aborted) {
+    return; // client already gone — do not start (or pay for) a model call
+  }
   const upstream = await gemini(apiKey).models.generateContentStream({
     model: MODEL,
     contents: prompt,
@@ -311,6 +315,13 @@ export async function POST(request: Request): Promise<Response> {
 
   if (isRateLimited(clientIp(request), now)) {
     return jsonError("rate_limit", 429);
+  }
+
+  // Reject an oversized body before parsing it (pre-production checklist S4).
+  // The question itself is capped at 500 chars, so a body this large is abuse.
+  const declaredLength = Number(request.headers.get("content-length") ?? "0");
+  if (Number.isFinite(declaredLength) && declaredLength > MAX_BODY_BYTES) {
+    return jsonError("bad_input", 413);
   }
 
   let body: unknown;

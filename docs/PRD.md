@@ -107,13 +107,13 @@ models, no database, no tracking.
 │      · synonym expansion · threshold check                │
 │   4. Build fenced prompt (<<<CONTEXT>>> data-only rule)   │
 │   5. Call @google/genai → gemma-4-26b-a4b-it (temp 0.3)   │
-│   6. Stream NDJSON: token* → sources → done(advisory)     │
+│   6. Stream NDJSON: sources → token* → done(advisory)     │
 └───────────────────────────────────────────────────────────┘
   GET /api/health → 200 {ok:true} (page-load warm-up)
 ```
 
-- **Streaming:** the answer streams as NDJSON lines (`token` → `sources` →
-  `done`); pre-stream failures (400/405/429) are plain JSON; mid-stream Gemini
+- **Streaming:** the answer streams as NDJSON lines (`sources` → `token*` →
+  `done`); pre-stream failures (400/405/413/429) are plain JSON; mid-stream Gemini
   failure emits one `error` line. Full contract: `docs/DESIGN.md` §5.
 - **Advisory ownership:** the server appends the advisory line (never the model)
   — no duplication.
@@ -206,7 +206,7 @@ API down (snippet fallback), rate-limited (friendly Hindi notice), offline
 | Correct refusals on out-of-KB questions | 3/3 |
 | Public URL live and phone-usable | Yes, before deadline |
 | Repo hygiene | No secrets in git; README names model + integration; tests pass |
-| Latency (retrieval + first token) | < 3 s typical on demo network |
+| Latency (retrieval + `sources`) | < 3 s typical — the answer text itself takes 15–33 s (thinking model), shown with a "thinking" state |
 
 ## 12. Timeline
 

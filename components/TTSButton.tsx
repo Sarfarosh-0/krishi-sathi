@@ -23,15 +23,10 @@ export default function TTSButton({
   strings,
   onToggle,
 }: TTSButtonProps) {
-  if (supported === null) {
-    return null;
-  }
   if (!supported) {
-    return (
-      <p lang={lang} className="text-xs text-muted">
-        {strings.ttsUnsupported}
-      </p>
-    );
+    // Unsupported (or not yet known on the server): render no button. The
+    // "read-aloud isn't available" notice is shown once, by MessageList.
+    return null;
   }
 
   return (

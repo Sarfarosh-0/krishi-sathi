@@ -78,6 +78,13 @@ export default function MessageList({
             />
           ))
         )}
+
+        {/* One-time notice when the browser has no speech synthesis. */}
+        {messages.length > 0 && speechSupported === false && (
+          <p lang={lang} className="text-center text-xs text-muted">
+            {strings.ttsUnsupported}
+          </p>
+        )}
       </div>
     </div>
   );

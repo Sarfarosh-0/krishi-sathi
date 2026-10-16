@@ -253,6 +253,7 @@ the sources already reached the client.
 | Bad input (empty / non-JSON / missing `question` / bad `lang`) | 400 | `AskErrorBody` (`bad_input`) |
 | Non-POST | 405 | `AskErrorBody`-shaped or empty |
 | Rate limited (10 req/min/IP, in-memory, **best-effort per serverless instance** — not global) | 429 | `AskErrorBody` (`rate_limit`) |
+| Oversized body (`Content-Length` > 8 KB, rejected before parsing) | 413 | `AskErrorBody` (`bad_input`) |
 | Cross-site `Origin` header (the route is same-origin only) | 403 | empty |
 
 Questions longer than 500 characters are **truncated**, not rejected.

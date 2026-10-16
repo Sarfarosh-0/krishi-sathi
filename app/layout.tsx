@@ -19,6 +19,17 @@ export const metadata: Metadata = {
   title: "कृषि साथी — Hindi-first farming advisor",
   description:
     "Smallholder farming questions answered in Hindi or English from a curated crop-guidance knowledge base, with sources and an honest refusal when the answer is not covered.",
+  // iOS "Add to Home Screen": full-screen launch + a proper home-screen title.
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "कृषि साथी",
+  },
+  // Next emits the standard `mobile-web-app-capable`; iOS Safari still reads the
+  // legacy Apple-prefixed flag for a standalone (full-screen) launch.
+  other: {
+    "apple-mobile-web-app-capable": "yes",
+  },
 };
 
 // `viewport-fit=cover` lets the composer padding use env(safe-area-inset-*)

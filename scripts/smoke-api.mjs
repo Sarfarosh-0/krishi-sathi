@@ -136,6 +136,18 @@ await expectBadInput("empty question → 400 bad_input", { question: "   ", lang
 await expectBadInput("missing question → 400 bad_input", { lang: "hi" });
 await expectBadInput("bad lang → 400 bad_input", { question: "गेहूँ में खाद कब डालें?", lang: "fr" });
 
+// Oversized body is rejected before parsing (route MAX_BODY_BYTES = 8 KB).
+const oversized = await fetch(`${BASE}/api/ask`, {
+  method: "POST",
+  headers: { "content-type": "application/json" },
+  body: JSON.stringify({ question: "a".repeat(9000), lang: "hi" }),
+});
+check(
+  "oversized body → 413 bad_input",
+  oversized.status === 413,
+  `status=${oversized.status}`
+);
+
 // ------------------------------------------------------------- refusal paths
 
 const longRes = await ask(LONG_Q, "hi");

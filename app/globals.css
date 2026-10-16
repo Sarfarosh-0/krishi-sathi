@@ -70,3 +70,15 @@ body {
   outline: 2px solid var(--color-ink);
   outline-offset: 2px;
 }
+
+/* Respect the OS "reduce motion" setting (WCAG 2.3): the thinking spinner and
+   the streaming caret stop animating for users who ask for less motion. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

@@ -11,8 +11,10 @@
 > **Repository:** `github.com/Sarfarosh-0/krishi-sathi` · **Commit:** `afcd3a6`
 >
 > **Status update (2026-10-16):** a follow-up fix pass closed the in-repo
-> blockers B1, B2 and B5 and the header items S9/S10. The *Status* and *Evidence*
-> fields below reflect the post-fix state; resolved rows say so explicitly.
+> blockers B1, B2 and B5, the header items S9/S10, and (later) the request-size
+> guard S4, reduced-motion U7 and the iOS install meta U12. The *Status* and
+> *Evidence* fields below reflect the post-fix state; resolved rows say so
+> explicitly.
 
 ---
 
@@ -94,8 +96,8 @@
 - **Risk:** A multi-MB POST is parsed by `request.json()` before the 500-char trim → memory pressure / slow-loris style abuse.
 - **Verification:** Send a large body (e.g. 5 MB) to `POST /api/ask` and observe status/memory; confirm the platform body limit.
 - **Priority:** Medium
-- **Status:** ⬜ Not Started
-- **Evidence or Notes:** No explicit `Content-Length` guard in `route.ts`. Vercel serverless enforces a request-body limit (~4.5 MB) but this is **unverified** for this project; local `next start` has no such guard. *Potential risk.*
+- **Status:** ✅ Passed
+- **Evidence or Notes:** `route.ts` now rejects a declared `Content-Length` over 8 KB with `413` before parsing (`MAX_BODY_BYTES`), and `scripts/smoke-api.mjs` asserts the 413 case. A chunked body with no `Content-Length` still falls back to the platform limit.
 
 ### S5 — Prompt-injection defence
 - [ ] **Requirement:** Retrieved KB context is fenced and declared data-only; the model cannot be instructed to answer outside the KB.
@@ -566,8 +568,8 @@
 - **Risk:** Discomfort for motion-sensitive users (WCAG 2.3).
 - **Verification:** `grep` for `prefers-reduced-motion`; enable the OS setting.
 - **Priority:** Medium
-- **Status:** ⬜ Not Started
-- **Evidence or Notes:** No `prefers-reduced-motion` handling found; `animate-spin`/`animate-pulse` always run. *Potential risk.*
+- **Status:** ✅ Passed
+- **Evidence or Notes:** `app/globals.css` now collapses animation/transition durations under `@media (prefers-reduced-motion: reduce)`, so the thinking spinner and the streaming caret stop animating for users who request less motion.
 
 ### U8 — Responsive layout & safe areas
 - [ ] **Requirement:** Usable at 390 px with no horizontal overflow; notches respected.
@@ -606,8 +608,8 @@
 - **Risk:** "Add to home screen" fails or looks broken.
 - **Verification:** Check `/manifest.webmanifest` (200), icons 192/512 + maskable, and installability criteria.
 - **Priority:** Medium
-- **Status:** ✅ Passed (with a gap for iOS)
-- **Evidence or Notes:** Manifest returns 200 with id/scope/display/orientation/theme; PNG icons 192/512 + maskable 512 present (regenerated from `public/Logo.png` by `scripts/generate-icons.mjs`, 2026-10-16); icons return 200. **Gap:** no `apple-mobile-web-app-capable` meta (DOM probe `appleWebApp=false`) → iOS full-screen install experience is degraded. **No service worker** → no offline caching (installability on Chrome/Android is unaffected).
+- **Status:** ✅ Passed
+- **Evidence or Notes:** Manifest returns 200 with id/scope/display/orientation/theme; PNG icons 192/512 + maskable 512 present (regenerated from `public/Logo.png` by `scripts/generate-icons.mjs`, 2026-10-16); icons return 200. iOS meta added via `appleWebApp` in `app/layout.tsx` (`apple-mobile-web-app-capable`). **Remaining gap:** no service worker → no offline caching (installability on Chrome/Android is unaffected).
 
 ---
 
@@ -775,14 +777,14 @@
 
 | # | Area | Items | Passed | Failed | In Progress | Not Started | N/A |
 |---|---|---:|---:|---:|---:|---:|---:|
-| 2 | Security | 20 | 11 | 1 | 2 | 3 | 3 |
+| 2 | Security | 20 | 12 | 1 | 2 | 2 | 3 |
 | 3 | Edge cases & error handling | 15 | 15 | 0 | 0 | 0 | 0 |
 | 4 | Reliability & data integrity | 11 | 6 | 1 | 2 | 0 | 2 |
 | 5 | Performance & scalability | 8 | 3 | 0 | 2 | 3 | 0 |
-| 6 | UX & accessibility | 12 | 10 | 0 | 0 | 2 | 0 |
+| 6 | UX & accessibility | 12 | 12 | 0 | 0 | 0 | 0 |
 | 7 | Deployment & operations | 10 | 3 | 1 | 0 | 6 | 0 |
 | 8 | Testing & documentation | 9 | 4 | 1 | 0 | 4 | 0 |
-| | **Total** | **85** | **52** | **4** | **6** | **18** | **5** |
+| | **Total** | **85** | **55** | **4** | **6** | **15** | **5** |
 
 **Interpretation (updated 2026-10-16):** the product logic **and** the previously
 failing hardening items are now verified — grounded/refusal pipeline, streaming
@@ -820,11 +822,8 @@ deliberately out-of-scope CI/CD (D8) and the accepted dev-only `braces` advisory
 **Unresolved (need a decision or a test)**
 
 - **S13** — Rate-limit key trust (`x-forwarded-for`) and per-instance (non-global) limiting. *Verify on the platform.*
-- **S4** — No explicit request-body size guard. *Verify the platform limit.*
 - **S8** — CSP `'unsafe-inline'` for scripts. *Accepted for the MVP; revisit if third-party content is ever added.*
 - **P1 / P7 / T6** — Performance and concurrency unmeasured.
-- **U7** — No `prefers-reduced-motion` handling.
-- **U12** — No iOS `apple-mobile-web-app-capable` meta; no service worker (no offline).
 - **E14** — The error boundaries are implemented and compiled but were not force-rendered (there is no throw route); run a forced-throw drill.
 - **S5 / T4** — Prompt-injection and DAST testing not performed.
 - **R5** — History source rebuild silently drops unknown KB ids.
