@@ -281,8 +281,11 @@ threshold check runs **before** any Gemini call; the scope-documentation chunk
 candidates, so the topics it lists — prices, schemes, loans, weather — always
 fall to the deterministic refusal path instead of being answered; server-side
 rate limiting is per-instance and approximate by design (no Redis — see
-AGENTS #11); advisory text lives only in server code, never in the model prompt
-output.
+AGENTS #11) and keyed on Vercel's platform-set `x-vercel-forwarded-for` /
+`x-forwarded-for`, which the platform overwrites (external IPs are not
+forwarded), so the key is not client-spoofable in production — locally every
+client shares one bucket; advisory text lives only in server code, never in the
+model prompt output.
 
 Localized server strings (`lang: "hi" | "en"`):
 

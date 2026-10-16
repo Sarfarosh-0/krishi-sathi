@@ -82,7 +82,14 @@ function isRateLimited(ip: string, now: number): boolean {
 }
 
 function clientIp(request: Request): string {
-  const forwarded = request.headers.get("x-forwarded-for");
+  // On Vercel these headers are set by the platform, which overwrites any
+  // client-supplied x-forwarded-for and does not forward external IPs — so the
+  // key cannot be spoofed from the browser in production. x-vercel-forwarded-for
+  // is identical but also survives a proxy placed in front of Vercel. Locally
+  // (next start) none of them exist, so every client shares the "unknown" bucket.
+  const forwarded =
+    request.headers.get("x-vercel-forwarded-for") ??
+    request.headers.get("x-forwarded-for");
   if (forwarded) {
     return forwarded.split(",")[0].trim();
   }

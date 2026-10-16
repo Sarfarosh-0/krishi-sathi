@@ -168,8 +168,8 @@
 - **Risk:** `clientIp()` trusts `x-forwarded-for` first value; if not behind a trusted proxy this is client-controllable → per-request key rotation bypasses the limit. Locally all non-forwarded clients share the `"unknown"` bucket.
 - **Verification:** On Vercel, confirm `x-forwarded-for` is platform-set (not client-controlled); test spoofed `x-forwarded-for` values against the deployed endpoint; document the multi-instance limitation.
 - **Priority:** High
-- **Status:** ⬜ Not Started
-- **Evidence or Notes:** `clientIp()` = `x-forwarded-for[0]` else `x-real-ip` else `"unknown"` (`route.ts:81–87`). *Potential risk — must be validated on the deployment platform.*
+- **Status:** 🟡 In Progress
+- **Evidence or Notes:** `clientIp()` now prefers `x-vercel-forwarded-for`, then `x-forwarded-for[0]`, then `x-real-ip`, else `"unknown"`. Vercel's docs state it **overwrites** `x-forwarded-for` and does not forward external IPs, so the key is **not client-spoofable in production** (locally, with no platform, a forged header still rotates buckets — which is why the spoof test must run against the deployed endpoint). Multi-instance (non-global) limiting remains **accepted** (no Redis — AGENTS #11); Vercel Firewall rate limiting is the platform-level option if the plan allows.
 
 ### S14 — Dependency vulnerabilities
 - [ ] **Requirement:** No high/critical vulnerabilities in production dependencies.
@@ -777,14 +777,14 @@
 
 | # | Area | Items | Passed | Failed | In Progress | Not Started | N/A |
 |---|---|---:|---:|---:|---:|---:|---:|
-| 2 | Security | 20 | 12 | 1 | 2 | 2 | 3 |
+| 2 | Security | 20 | 12 | 1 | 3 | 1 | 3 |
 | 3 | Edge cases & error handling | 15 | 15 | 0 | 0 | 0 | 0 |
 | 4 | Reliability & data integrity | 11 | 6 | 1 | 2 | 0 | 2 |
 | 5 | Performance & scalability | 8 | 3 | 0 | 2 | 3 | 0 |
 | 6 | UX & accessibility | 12 | 12 | 0 | 0 | 0 | 0 |
 | 7 | Deployment & operations | 10 | 3 | 1 | 0 | 6 | 0 |
 | 8 | Testing & documentation | 9 | 4 | 1 | 0 | 4 | 0 |
-| | **Total** | **85** | **55** | **4** | **6** | **15** | **5** |
+| | **Total** | **85** | **55** | **4** | **7** | **14** | **5** |
 
 **Interpretation (updated 2026-10-16):** the product logic **and** the previously
 failing hardening items are now verified — grounded/refusal pipeline, streaming
