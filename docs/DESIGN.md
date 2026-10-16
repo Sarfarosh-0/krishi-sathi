@@ -257,6 +257,10 @@ the sources already reached the client.
   already arrived.
 - **Stream ends without `done`/`error`** (network drop): client treats as
   `upstream` error.
+- **`done` with no answer text** (`refused:false` but zero `token` text — the
+  model returned nothing usable): the client also treats this as an `upstream`
+  failure, so the snippet-fallback card + retry show instead of an empty answer
+  bubble. Only a `refused` completion or a non-empty answer becomes `done`.
 - Each line is a single `\n`-terminated JSON object; no other framing.
 
 **Failures detected before streaming starts** return plain JSON:

@@ -179,6 +179,14 @@ export interface ChipDef {
 /**
  * The 8 suggested questions (DESIGN §1.1, DECISIONS §3). Chip #8 is
  * deliberately out of KB so the demo can show the refusal path.
+ *
+ * `question` is the exact text sent to `/api/ask` (it is BOTH the retrieval
+ * query and the model prompt), so every answerable chip must keep the crop and
+ * topic words its target KB chunk is indexed on (`kb/crop-docs.json`) — e.g.
+ * `इल्टी` for the wheat borer chunk, `सिंचाई` for the paddy irrigation chunk.
+ * Rewording a chip is safe as long as those anchors stay; dropping one silently
+ * changes which chunk answers. Chip #8 must keep its out-of-scope wording
+ * (fish/cost) so it still refuses.
  */
 export const CHIPS: ChipDef[] = [
   {
@@ -194,7 +202,7 @@ export const CHIPS: ChipDef[] = [
   {
     id: "paddy-irrigation",
     hi: { label: "धान: सिंचाई", question: "धान में सिंचाई कब-कब करनी चाहिए?" },
-    en: { label: "Paddy: irrigation", question: "When should I irrigate paddy?" },
+    en: { label: "Paddy: irrigation", question: "At which stages should I irrigate paddy?" },
   },
   {
     id: "wheat-rust",
@@ -209,7 +217,7 @@ export const CHIPS: ChipDef[] = [
   {
     id: "pre-rain",
     hi: { label: "बारिश से पहले", question: "बारिश से पहले खेत में क्या करें?" },
-    en: { label: "Before rain", question: "What should I do in the field before rain?" },
+    en: { label: "Before rain", question: "What preparations should I make before rain?" },
   },
   {
     id: "onion-sowing",

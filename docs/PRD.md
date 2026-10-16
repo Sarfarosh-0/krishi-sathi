@@ -84,7 +84,7 @@ models, no database, no tracking.
 | FR7 | Every answer ends with the non-authoritative advisory line | Must |
 | FR8 | "सुनें / Listen" — browser TTS reads the answer aloud (Hindi voice) | Must |
 | FR9 | Voice input via Web Speech API (hi-IN) with fallback to typing | Must |
-| FR10 | Fallback: on API timeout/429/5xx show retrieved KB snippets + friendly message, never a crash | Must |
+| FR10 | Fallback: on API timeout/429/5xx, or an empty model completion, show retrieved KB snippets + friendly message, never a crash | Must |
 | FR11 | Client + server rate limit (10 req/min/IP) | Must |
 | FR12 | Dashboard: device-local impact counter + question history (localStorage, cap 50, live count, confirmed per-item delete, clear-all) | Should |
 | FR13 | PWA manifest (installable, home-screen; PNG 192/512 + maskable 512 + PNG favicon + iOS `apple-icon`, all derived from the logo) | Should |

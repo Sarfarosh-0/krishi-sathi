@@ -168,15 +168,23 @@ export default function Home() {
             break;
           case "done": {
             const refused = event.refused;
+            const hasText = answerText.trim().length > 0;
+            // A non-refused completion with no text means the model produced
+            // nothing usable: fall back to the snippet card + retry instead of
+            // rendering an empty answer bubble (the sources already arrived).
+            if (!refused && !hasText) {
+              updateMessage(assistantId, { status: "upstream" });
+              break;
+            }
             // A refusal counts as asked + refused, never answered (FR12).
-            const hasAnswer = refused || answerText.trim().length > 0;
+            const hasAnswer = refused || hasText;
             updateMessage(assistantId, {
               status: refused ? "refused" : "done",
               advisory: event.advisory,
             });
             setImpact((current) => ({
               ...current,
-              answered: current.answered + (!refused && hasAnswer ? 1 : 0),
+              answered: current.answered + (!refused && hasText ? 1 : 0),
               refused: current.refused + (refused ? 1 : 0),
             }));
             if (hasAnswer) {
