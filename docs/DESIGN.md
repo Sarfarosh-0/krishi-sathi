@@ -262,11 +262,15 @@ Questions longer than 500 characters are **truncated**, not rejected.
 
 - `gemma-4-26b-a4b-it` **rejects `config.systemInstruction`** (500/503), so the
   system rules are folded into `contents`.
-- It is a **thinking model** and `thinkingConfig.thinkingBudget` returns
-  `400 "Thinking budget is not supported for this model."` — thinking cannot be
-  capped, so a real answer takes **15–33 s** (605–1446 thinking tokens).
-- Thinking tokens are charged to `maxOutputTokens`, so the cap must be generous
-  (2048) or the answer comes back empty.
+- It is a **thinking model**. `thinkingConfig.thinkingBudget` and the
+  `low`/`medium`/`high` thinking levels are **rejected** with
+  `400 "… is not supported for this model."`, but **`thinkingLevel: "minimal"`
+  is accepted** and skips thinking (verified 2026-10-16). With it a real answer
+  drops from **15–33 s** (605–1446 thinking tokens) to **~3–5 s**, with the
+  source citation and the out-of-KB refusal still intact.
+- Thinking tokens are charged to `maxOutputTokens`; with `thinkingLevel:
+  "minimal"` an answer uses ~120 tokens, so the generous cap (2048) can never
+  come back empty.
 - The API returns **fast 5xx** intermittently (~1 s per failure, reproducible with
   the plain SDK outside Next, so it is not a bundling issue). Hence the retry
   loop and `export const maxDuration = 60`.

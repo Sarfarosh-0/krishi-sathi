@@ -206,7 +206,7 @@ API down (snippet fallback), rate-limited (friendly Hindi notice), offline
 | Correct refusals on out-of-KB questions | 3/3 |
 | Public URL live and phone-usable | Yes, before deadline |
 | Repo hygiene | No secrets in git; README names model + integration; tests pass |
-| Latency (retrieval + `sources`) | < 3 s typical — the answer text itself takes 15–33 s (thinking model), shown with a "thinking" state |
+| Latency (retrieval + `sources`) | < 1 s — with `thinkingLevel: "minimal"` the answer text follows in ~3–5 s, shown with a "thinking" state |
 
 ## 12. Timeline
 

@@ -1,4 +1,4 @@
-import { GoogleGenAI } from "@google/genai";
+import { GoogleGenAI, ThinkingLevel } from "@google/genai";
 import type { AskErrorBody, AskRequest, KBSource, Lang, StreamEvent } from "@/lib/types";
 import { getChunks } from "@/lib/kb";
 import { retrieve } from "@/lib/retrieval";
@@ -8,16 +8,18 @@ import { retrieve } from "@/lib/retrieval";
 // the default runtime and the Edge runtime is deprecated in Next 16, so this
 // route still runs on Node — where the Gemini key must stay.
 //
-// The pinned model is a thinking model and its thinking cannot be capped
-// (measured 15-33 s per answer, 605-1446 thinking tokens). 60 s is Vercel
-// Hobby's ceiling; the in-route deadline stays just under it so a slow answer
-// still ends with a clean `upstream` event instead of a platform kill.
+// The pinned model is a thinking model. `thinkingBudget` and the LOW/MEDIUM/HIGH
+// thinking levels are rejected (400), but `ThinkingLevel.MINIMAL` is accepted and
+// skips thinking: a real answer drops from ~15-33 s (605-1446 thinking tokens) to
+// ~3-5 s, with citations and refusals intact (verified 2026-10-16). 60 s is
+// Vercel Hobby's ceiling; the in-route deadline stays just under it so a slow
+// answer still ends with a clean `upstream` event.
 export const maxDuration = 60;
 
 const MODEL = "gemma-4-26b-a4b-it";
 const MAX_QUESTION_CHARS = 500; // PRD: longer questions are truncated, not rejected
 const MAX_BODY_BYTES = 8_192; // the question is capped at 500 chars; a larger body is abuse
-const MAX_OUTPUT_TOKENS = 2048; // must cover thinking tokens AND the answer
+const MAX_OUTPUT_TOKENS = 2048; // comfortably covers a minimal-thinking answer
 const TOP_CHUNKS = 3;
 const UPSTREAM_DEADLINE_MS = 55_000;
 const MAX_ATTEMPTS = 4; // the pinned model returns fast 5xx often; retries are cheap (~1 s)
@@ -183,7 +185,14 @@ async function attemptOnce(
   const upstream = await gemini(apiKey).models.generateContentStream({
     model: MODEL,
     contents: prompt,
-    config: { temperature: 0.3, maxOutputTokens: MAX_OUTPUT_TOKENS },
+    config: {
+      temperature: 0.3,
+      maxOutputTokens: MAX_OUTPUT_TOKENS,
+      // Verified 2026-10-16: MINIMAL is the only accepted thinking level
+      // (LOW/MEDIUM/HIGH and thinkingBudget all return 400). Skipping thinking
+      // takes a real answer from ~15-33 s to ~3-5 s, citations intact.
+      thinkingConfig: { thinkingLevel: ThinkingLevel.MINIMAL },
+    },
   });
 
   const iterator = upstream[Symbol.asyncIterator]();

@@ -77,7 +77,9 @@ flowchart TD
    table expanding farmer phrasing (e.g. *पीली इल्टी* = *yellow stem borer*).
 3. **Refuse or answer** — below the threshold the route refuses immediately
    (no API call). Above it, the top-3 chunks become fenced prompt context.
-4. **Generate** — `gemma-4-26b-a4b-it` streams an answer grounded in the context.
+4. **Generate** — `gemma-4-26b-a4b-it` streams an answer grounded in the context,
+   with `thinkingLevel: "minimal"` (the one accepted value) so answers arrive in
+   ~3–5 s rather than the ~15–33 s full-thinking path.
 5. **Stream** — the answer arrives as NDJSON (`sources → token* → done`), so
    citations are on screen while the model is still thinking.
 6. **Advisory** — the server appends the non-authoritative advisory line; the

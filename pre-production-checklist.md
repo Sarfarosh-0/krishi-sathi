@@ -469,7 +469,7 @@
 - **Verification:** Confirm `maxDuration` is honored on the plan; measure p95 latency.
 - **Priority:** High
 - **Status:** 🟡 In Progress
-- **Evidence or Notes:** `maxDuration = 60`, 55 s in-route deadline, ≤4 retries (`route.ts:15–23`). Answers measured **15–33 s** (thinking model). **Unverified:** that the chosen Vercel plan allows a 60 s function (see D4).
+- **Evidence or Notes:** `maxDuration = 60`, 55 s in-route deadline, ≤4 retries (`route.ts:15–24`). With `thinkingLevel: "minimal"` (verified 2026-10-16) answers measured **~3–5 s** instead of the 15–33 s full-thinking path, so the 60 s ceiling is no longer a practical risk. **Unverified:** the exact plan limit (see D4).
 
 ### P4 — Cold start
 - [ ] **Requirement:** The first real request does not pay a full cold start.
@@ -493,7 +493,7 @@
 - **Verification:** Measure a long answer; confirm `maxOutputTokens` bound (2048).
 - **Priority:** Medium
 - **Status:** ✅ Passed
-- **Evidence or Notes:** `maxOutputTokens: 2048`; streaming with incremental render; `whitespace-pre-wrap` lists. Long-answer UI behaviour observed in Phase 4. (No dedicated stress test.)
+- **Evidence or Notes:** `maxOutputTokens: 2048`; with `thinkingLevel: "minimal"` the answer uses ~120 tokens, so the cap is never the binding limit; streaming with incremental render; `whitespace-pre-wrap` lists. Long-answer UI behaviour observed in Phase 4. (No dedicated stress test.)
 
 ### P7 — Concurrency / multi-instance behaviour
 - [ ] **Requirement:** Concurrent users do not corrupt state; limits behave predictably at scale.
