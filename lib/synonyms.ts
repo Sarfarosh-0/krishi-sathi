@@ -39,6 +39,23 @@ export const SYNONYM_GROUPS: readonly (readonly string[])[] = [
   ["माहू", "चेपा", "लाही", "aphid", "aphids", "रस चूसक", "mahu", "chepa", "lahi"],
   ["थ्रिप्स", "थ्रिप", "thrips", "पत्ती चूसक"],
   ["डेड हार्ट", "dead heart", "सफेद बाली", "white ear"],
+  // Generic pest words. Every pest chunk is tagged "कीट" / "pest", so mapping
+  // the Roman transliterations into that group turns "keet"/"keeda" into a real
+  // tag hit instead of a lucky alphabetical tie-break.
+  [
+    "कीट",
+    "कीड़ा",
+    "कीड़े",
+    "कीड़ों",
+    "कीटों",
+    "pest",
+    "pests",
+    "insect",
+    "insects",
+    "keet",
+    "keeda",
+    "keede",
+  ],
 
   // ---- diseases --------------------------------------------------------
   [

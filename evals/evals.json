@@ -1,7 +1,7 @@
 {
   "meta": {
     "note": "Retrieval-only eval set (PRD §7, DECISIONS §4). No Gemini quota is used: every case asserts which chunk retrieval puts first. `expect` is a chunk id from kb/crop-docs.json.",
-    "passTarget": "12 of 15"
+    "passTarget": "80% of cases (>= 24 of 30)"
   },
   "cases": [
     {
@@ -101,6 +101,110 @@
       "lang": "hi",
       "expect": "pre_rain_actions",
       "chip": "pre-rain actions"
+    },
+    {
+      "id": "e16",
+      "q": "गेहूँ में सिंचाई कब करें?",
+      "lang": "hi",
+      "expect": "wheat_irrigation_first",
+      "note": "paraphrase of e05 without the \"पहली\" qualifier"
+    },
+    {
+      "id": "e17",
+      "q": "gehu me pani kab dena hai",
+      "lang": "hi",
+      "expect": "wheat_irrigation_first",
+      "note": "Roman-Hindi paraphrase"
+    },
+    {
+      "id": "e18",
+      "q": "गेहूँ में यूरिया कब डालें?",
+      "lang": "hi",
+      "expect": "wheat_fertiliser_timing",
+      "note": "names the fertiliser instead of \"खाद\""
+    },
+    {
+      "id": "e19",
+      "q": "when to apply urea to wheat",
+      "lang": "en",
+      "expect": "wheat_fertiliser_timing"
+    },
+    {
+      "id": "e20",
+      "q": "gehu me ratua",
+      "lang": "hi",
+      "expect": "wheat_disease_rust",
+      "note": "Roman-Hindi shorthand"
+    },
+    {
+      "id": "e21",
+      "q": "dhan me pani kab dena hai",
+      "lang": "hi",
+      "expect": "paddy_irrigation_stages",
+      "note": "Roman-Hindi paraphrase"
+    },
+    {
+      "id": "e22",
+      "q": "how often should I water rice",
+      "lang": "en",
+      "expect": "paddy_irrigation_stages",
+      "note": "colloquial English, no \"stages\" keyword"
+    },
+    {
+      "id": "e23",
+      "q": "धान में कीड़े लग गए हैं",
+      "lang": "hi",
+      "expect": "paddy_pest_stem_borer",
+      "note": "generic pest word, no \"तना छेदक\""
+    },
+    {
+      "id": "e24",
+      "q": "सरसों में कीट लगे हैं",
+      "lang": "hi",
+      "expect": "mustard_pest_aphid",
+      "note": "generic pest word, no \"माहू\""
+    },
+    {
+      "id": "e25",
+      "q": "pyaz me keeda",
+      "lang": "hi",
+      "expect": "onion_pest_thrips",
+      "note": "Roman-Hindi generic pest word"
+    },
+    {
+      "id": "e26",
+      "q": "masoor buwai ka samay",
+      "lang": "hi",
+      "expect": "lentil_sowing_window",
+      "note": "Roman-Hindi paraphrase"
+    },
+    {
+      "id": "e27",
+      "q": "neem spray karne me savdhani",
+      "lang": "hi",
+      "expect": "spray_safety_neem",
+      "note": "Roman-Hindi paraphrase"
+    },
+    {
+      "id": "e28",
+      "q": "rain se pehle khet me kya kare",
+      "lang": "hi",
+      "expect": "pre_rain_actions",
+      "note": "Roman-Hindi paraphrase"
+    },
+    {
+      "id": "e29",
+      "q": "pyaz ki buwai kab kare",
+      "lang": "hi",
+      "expect": "onion_sowing_transplant",
+      "note": "Roman-Hindi paraphrase"
+    },
+    {
+      "id": "e30",
+      "q": "gehu me ilti ka ilaj",
+      "lang": "hi",
+      "expect": "wheat_pest_yellow_stem_borer",
+      "note": "Roman-Hindi paraphrase"
     }
   ],
   "refusals": [

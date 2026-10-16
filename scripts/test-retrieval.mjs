@@ -77,7 +77,7 @@ test("KB: every answerable chunk follows लक्षण / उपाय / सा
 
 // -------------------------------------------------------------- eval coverage
 
-test(`retrieval: at least 12 of ${evals.cases.length} eval questions hit the expected chunk`, () => {
+test(`retrieval: >= 80% of ${evals.cases.length} eval questions hit the expected chunk`, () => {
   const failures = [];
   for (const evalCase of evals.cases) {
     const got = topId(evalCase.q);
@@ -89,14 +89,15 @@ test(`retrieval: at least 12 of ${evals.cases.length} eval questions hit the exp
   }
 
   const passed = evals.cases.length - failures.length;
+  const needed = Math.ceil(evals.cases.length * 0.8);
   console.log(
     `\n  Retrieval eval: ${passed}/${evals.cases.length} questions matched their expected chunk.` +
       (failures.length > 0 ? `\n  Misses:\n   - ${failures.join("\n   - ")}\n` : "\n")
   );
 
   assert.ok(
-    passed >= 12,
-    `only ${passed}/${evals.cases.length} eval cases passed (need >= 12):\n${failures.join("\n")}`
+    passed >= needed,
+    `only ${passed}/${evals.cases.length} eval cases passed (need >= ${needed}):\n${failures.join("\n")}`
   );
 });
 

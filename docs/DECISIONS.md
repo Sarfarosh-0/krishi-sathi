@@ -70,9 +70,9 @@ optional stretch and is **not** promised.
 - **Metadata per chunk:** `id, title, titleEn, crop[], season, tags[], text,
   textEn, source, priority`.
 - **Scoring:** crop match (strongest) > tags > token overlap;
-  **synonym table** (`lib/synonyms.ts`, 30–50 lines, e.g. "पीली इल्टी" =
+  **synonym table** (`lib/synonyms.ts`, e.g. "पीली इल्टी" =
   "yellow stem borer" = "borer") expands queries before scoring.
-- **Calibrated weights (locked in Phase 2, after 15/15 eval pass):** crop `3`;
+- **Calibrated weights (locked in Phase 2, after a 30/30 eval pass):** crop `3`;
   each distinct tag hit `2` (max 2 hits); each distinct token-overlap hit `1`
   (max 4 hits); **threshold `5`** — below it the refusal path runs. Queries are
   lower-cased and reduced to Devanagari + ASCII alphanumerics; question words and
@@ -84,7 +84,8 @@ optional stretch and is **not** promised.
   cannot drift.
 - **"What NOT to answer" doc** (market price, schemes, loans, live weather →
   sanctioned referral).
-- **Eval set:** ~15 (question → expected source) pairs + 3 expected refusals,
+- **Eval set:** ~30 (question → expected source) pairs — including Roman-Hindi
+  and English paraphrases — + 3 expected refusals,
   run as retrieval-only unit tests (no API quota burn).
 
 ---
