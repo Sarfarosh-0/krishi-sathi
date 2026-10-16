@@ -1,7 +1,7 @@
 {
   "meta": {
     "note": "Retrieval-only eval set (PRD §7, DECISIONS §4). No Gemini quota is used: every case asserts which chunk retrieval puts first. `expect` is a chunk id from kb/crop-docs.json.",
-    "passTarget": "80% of cases (>= 24 of 30)"
+    "passTarget": "80% of cases (>= 31 of 38)"
   },
   "cases": [
     {
@@ -205,6 +205,62 @@
       "lang": "hi",
       "expect": "wheat_pest_yellow_stem_borer",
       "note": "Roman-Hindi paraphrase"
+    },
+    {
+      "id": "e31",
+      "q": "gehu me khaad kab daale",
+      "lang": "hi",
+      "expect": "wheat_fertiliser_timing",
+      "note": "Roman \"khaad\" alias"
+    },
+    {
+      "id": "e32",
+      "q": "गेहूँ में गेरुआ लगा है",
+      "lang": "hi",
+      "expect": "wheat_disease_rust",
+      "note": "colloquial \"गेरुआ\" for rust"
+    },
+    {
+      "id": "e33",
+      "q": "gehu me gerua",
+      "lang": "hi",
+      "expect": "wheat_disease_rust",
+      "note": "Roman-Hindi \"gerua\""
+    },
+    {
+      "id": "e34",
+      "q": "rai me khaad kab",
+      "lang": "hi",
+      "expect": "mustard_fertiliser_timing",
+      "note": "\"राई\"/\"rai\" alias for mustard"
+    },
+    {
+      "id": "e35",
+      "q": "प्याज की बुआई कब करें?",
+      "lang": "hi",
+      "expect": "onion_sowing_transplant",
+      "note": "\"बुआई\" spelling variant of \"बुवाई\""
+    },
+    {
+      "id": "e36",
+      "q": "dhaan me pani kab dena",
+      "lang": "hi",
+      "expect": "paddy_irrigation_stages",
+      "note": "Roman-Hindi \"dhaan\""
+    },
+    {
+      "id": "e37",
+      "q": "gehoon me keeda",
+      "lang": "hi",
+      "expect": "wheat_pest_yellow_stem_borer",
+      "note": "Roman-Hindi \"gehoon\" + generic pest"
+    },
+    {
+      "id": "e38",
+      "q": "lentil seed rate",
+      "lang": "en",
+      "expect": "lentil_sowing_window",
+      "note": "guards the in-KB \"seed rate\" exception to the out-of-scope check"
     }
   ],
   "refusals": [
@@ -225,6 +281,36 @@
       "q": "बैंक से कृषि लोन कैसे मिलेगा?",
       "lang": "hi",
       "note": "Loans/credit are a PRD non-goal."
+    },
+    {
+      "id": "r04",
+      "q": "खाद की कीमत कितनी है",
+      "lang": "hi",
+      "note": "Market price is a PRD non-goal — must refuse even though \"खाद\" is an in-KB topic."
+    },
+    {
+      "id": "r05",
+      "q": "यूरिया का भाव",
+      "lang": "hi",
+      "note": "Price word next to an in-KB fertiliser topic."
+    },
+    {
+      "id": "r06",
+      "q": "urea ka rate",
+      "lang": "hi",
+      "note": "Roman-Hindi price question."
+    },
+    {
+      "id": "r07",
+      "q": "गेहूँ का मंडी भाव",
+      "lang": "hi",
+      "note": "Crop + market price."
+    },
+    {
+      "id": "r08",
+      "q": "khaad ki keemat",
+      "lang": "hi",
+      "note": "Roman-Hindi price question with the new \"khaad\" alias."
     }
   ]
 }

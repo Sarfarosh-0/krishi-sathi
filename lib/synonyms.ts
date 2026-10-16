@@ -1,4 +1,44 @@
 /**
+ * Topics the advisor deliberately does not answer (PRD non-goals). Declared
+ * before the synonym groups so retrieval can refuse a query that names one
+ * *before* scoring — otherwise "खाद की कीमत" matches the fertiliser chunks on
+ * "खाद" and leaks an answer for a market-price question. Never add these as
+ * tags to an answerable chunk.
+ */
+export const OUT_OF_SCOPE_GROUPS: readonly (readonly string[])[] = [
+  [
+    "कीमत",
+    "भाव",
+    "मूल्य",
+    "दाम",
+    "price",
+    "rate",
+    "मार्केट",
+    "market",
+    "keemat",
+    "kimat",
+    "bhav",
+    "bhaav",
+    "daam",
+    "moolya",
+  ],
+  ["योजना", "सरकारी योजना", "scheme", "subsidy", "सब्सिडी", "अनुदान", "किसान योजना", "yojana", "sarkari"],
+  ["लोन", "ऋण", "कर्ज", "loan", "credit", "बैंक", "bank", "karz", "karza"],
+  ["लागत", "खर्च", "cost", "expense", "lagat", "kharch"],
+  ["मछली", "मछली पालन", "fish", "fishery", "aquaculture", "मत्स्य", "machhli"],
+  ["मौसम", "weather", "जलवायु", "climate", "पूर्वानुमान", "forecast", "mausam", "mosam"],
+];
+
+/** Every out-of-scope term, for the pre-scoring refusal check. */
+export const OUT_OF_SCOPE_TERMS: readonly string[] = (() => {
+  const terms: string[] = [];
+  for (const group of OUT_OF_SCOPE_GROUPS) {
+    terms.push(...group);
+  }
+  return terms;
+})();
+
+/**
  * Hindi ⇄ English synonym groups (DECISIONS §4, PRD §7).
  *
  * Farmers phrase the same problem in many ways — "पीली इल्टी", "तना छेदक",
@@ -8,16 +48,16 @@
  *
  * Rules of thumb:
  * - Every term is lower-case (matching normalisation in lib/retrieval.ts).
- * - Include both scripts and common Roman transliterations (gehu, dhán...).
+ * - Include both scripts and common Roman transliterations (gehu, dhaan...).
  * - Keep out structural boilerplate (लक्षण / उपाय / सावधानी) — it appears in
  *   every chunk and would carry zero signal. Those live in retrieval STOPWORDS.
  * - Multi-word terms are allowed and matched as substrings.
  */
 export const SYNONYM_GROUPS: readonly (readonly string[])[] = [
   // ---- crops -----------------------------------------------------------
-  ["गेहूँ", "गेहू", "गेहूं", "gehu", "gehun", "wheat"],
-  ["धान", "धान की फसल", "चावल", "dhan", "chawal", "paddy", "rice"],
-  ["सरसों", "सरसो", "सरसों की फसल", "sarson", "mustard"],
+  ["गेहूँ", "गेहू", "गेहूं", "gehu", "gehun", "gehoon", "wheat"],
+  ["धान", "धान की फसल", "चावल", "dhan", "dhaan", "chawal", "paddy", "rice"],
+  ["सरसों", "सरसो", "राई", "सरसों की फसल", "sarson", "rai", "mustard"],
   ["प्याज", "प्याज़", "pyaz", "piyaz", "onion"],
   ["मसूर", "मसूर दाल", "masoor", "lentil"],
 
@@ -37,7 +77,7 @@ export const SYNONYM_GROUPS: readonly (readonly string[])[] = [
     "tana chhedak",
   ],
   ["माहू", "चेपा", "लाही", "aphid", "aphids", "रस चूसक", "mahu", "chepa", "lahi"],
-  ["थ्रिप्स", "थ्रिप", "thrips", "पत्ती चूसक"],
+  ["थ्रिप्स", "थ्रीप्स", "थ्रिप", "thrips", "पत्ती चूसक"],
   ["डेड हार्ट", "dead heart", "सफेद बाली", "white ear"],
   // Generic pest words. Every pest chunk is tagged "कीट" / "pest", so mapping
   // the Roman transliterations into that group turns "keet"/"keeda" into a real
@@ -60,6 +100,7 @@ export const SYNONYM_GROUPS: readonly (readonly string[])[] = [
   // ---- diseases --------------------------------------------------------
   [
     "रतुआ",
+    "गेरुआ",
     "पीला रतुआ",
     "भूरा रतुआ",
     "नीला रतुआ",
@@ -70,16 +111,31 @@ export const SYNONYM_GROUPS: readonly (readonly string[])[] = [
     "leaf rust",
     "blue rust",
     "ratua",
+    "gerua",
   ],
   ["झुलसा", "blight", "बैक्टीरियल झुलसा", "bacterial blight", "जीवाणु झुलसा", "jhulsa"],
   ["उकठा", "उकठा रोग", "wilt", "मुरझाना", "मुरझा", "ukatha"],
 
   // ---- topics ----------------------------------------------------------
-  ["खाद", "उर्वरक", "fertiliser", "fertilizer", "पोषक तत्व", "nutrient", "khad"],
+  ["खाद", "उर्वरक", "fertiliser", "fertilizer", "पोषक तत्व", "nutrient", "khad", "khaad"],
   ["यूरिया", "urea", "नाइट्रोजन", "nitrogen", "top dressing", "टॉप ड्रेसिंग"],
-  ["सिंचाई", "पानी देना", "irrigation", "irrigate", "watering", "पानी", "sinchai", "pani"],
+  [
+    "सिंचाई",
+    "पानी देना",
+    "सींचना",
+    "irrigation",
+    "irrigate",
+    "watering",
+    "water",
+    "पानी",
+    "sinchai",
+    "pani",
+  ],
   [
     "बुवाई",
+    "बुआई",
+    "बोवाई",
+    "बोआई",
     "बोना",
     "बीजाई",
     "बीज",
@@ -88,6 +144,7 @@ export const SYNONYM_GROUPS: readonly (readonly string[])[] = [
     "बोनी",
     "seed",
     "buwai",
+    "bowai",
     "bona",
     "beej",
   ],
@@ -119,14 +176,8 @@ export const SYNONYM_GROUPS: readonly (readonly string[])[] = [
   ["नुकसान", "क्षति", "damage", "loss", "नुक़सान"],
 
   // ---- deliberately out-of-scope topics --------------------------------
-  // These exist so out-of-KB questions expand into terms that no answerable
-  // chunk carries. They must NEVER be added as tags to an answerable chunk.
-  ["कीमत", "भाव", "मूल्य", "दाम", "price", "rate", "मार्केट", "market"],
-  ["योजना", "सरकारी योजना", "scheme", "subsidy", "सब्सिडी", "अनुदान", "किसान योजना"],
-  ["लोन", "ऋण", "कर्ज", "loan", "credit", "बैंक", "bank"],
-  ["लागत", "खर्च", "cost", "expense"],
-  ["मछली", "मछली पालन", "fish", "fishery", "aquaculture", "मत्स्य"],
-  ["मौसम", "weather", "जलवायु", "climate", "पूर्वानुमान", "forecast"],
+  // Declared above so retrieval can also refuse them before scoring.
+  ...OUT_OF_SCOPE_GROUPS,
 ];
 
 /** term → every term in its group (built once at module load). */

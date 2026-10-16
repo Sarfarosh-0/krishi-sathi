@@ -276,10 +276,14 @@ Questions longer than 500 characters are **truncated**, not rejected.
   loop and `export const maxDuration = 60`.
 
 Rules: client never sees Gemini errors verbatim (only `"upstream"`); the refusal
-threshold check runs **before** any Gemini call; the scope-documentation chunk
-(`out_of_scope` tag in `kb/crop-docs.json`) is excluded from retrieval
-candidates, so the topics it lists — prices, schemes, loans, weather — always
-fall to the deterministic refusal path instead of being answered; server-side
+threshold check runs **before** any Gemini call, and a question naming a non-goal
+topic (`isOutOfScope` in `lib/retrieval.ts`) is refused even earlier — before
+scoring — so an in-KB topic word can never pull a price/scheme/loan/weather
+question over the threshold (e.g. "खाद की कीमत" refuses); the
+scope-documentation chunk (`out_of_scope` tag in `kb/crop-docs.json`) is excluded
+from retrieval candidates, so the topics it lists — prices, schemes, loans,
+weather — always fall to the deterministic refusal path instead of being
+answered; server-side
 rate limiting is per-instance and approximate by design (no Redis — see
 AGENTS #11) and keyed on Vercel's platform-set `x-vercel-forwarded-for` /
 `x-forwarded-for`, which the platform overwrites (external IPs are not

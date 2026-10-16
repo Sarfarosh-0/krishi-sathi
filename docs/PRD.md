@@ -137,7 +137,10 @@ models, no database, no tracking.
   region) in the README — no claim of official endorsement.
 - **Synonym table** (`lib/synonyms.ts`) expands farmer phrasing
   (e.g. पीली इल्टी = yellow stem borer = borer) before scoring.
-- **Eval set:** ~15 (question → expected source) + 3 expected refusals, run as
+- **Non-goal guard:** a question that names a PRD non-goal (market price,
+  schemes, loans, cost, fishery, weather) is refused **before scoring**, so an
+  in-KB topic word inside such a question can never leak an answer.
+- **Eval set:** 38 (question → expected source) + 8 expected refusals, run as
   retrieval-only unit tests (`node:test`).
 
 ## 8. AI integration — Gemma 4
@@ -202,8 +205,8 @@ API down (snippet fallback), rate-limited (friendly Hindi notice), offline
 
 | Metric | Target |
 |---|---|
-| Correct, grounded answers on the eval set | ≥ 12/15 with correct source cited |
-| Correct refusals on out-of-KB questions | 3/3 |
+| Correct, grounded answers on the eval set | ≥ 31/38 with correct source cited |
+| Correct refusals on out-of-KB questions | 8/8 |
 | Public URL live and phone-usable | Yes, before deadline |
 | Repo hygiene | No secrets in git; README names model + integration; tests pass |
 | Latency (retrieval + `sources`) | < 1 s — with `thinkingLevel: "minimal"` the answer text follows in ~3–5 s, shown with a "thinking" state |

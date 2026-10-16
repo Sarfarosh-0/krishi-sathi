@@ -135,6 +135,24 @@ test(`refusals: ${evals.refusals.length}/${evals.refusals.length} out-of-KB ques
   }
 });
 
+test("refusals: a non-goal topic refuses even beside an in-KB topic word", () => {
+  // "खाद"/"khaad" is an in-KB topic, so these only refuse because the
+  // out-of-scope check runs before scoring (see isOutOfScope in lib/retrieval.ts).
+  const mixed = [
+    "खाद की कीमत कितनी है",
+    "यूरिया का भाव",
+    "urea ka rate",
+    "गेहूँ का मंडी भाव",
+    "khaad ki keemat",
+  ];
+  for (const query of mixed) {
+    assert.deepEqual(retrieve(query, chunks), [], `"${query}" should refuse`);
+  }
+
+  // ...but the in-KB topic "seed rate" must still answer (it contains "rate").
+  assert.equal(topId("lentil seed rate"), "lentil_sowing_window");
+});
+
 test("the out_of_scope chunk is never returned as a source", () => {
   const probes = [
     ...evals.cases.map((c) => c.q),

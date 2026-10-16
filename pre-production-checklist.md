@@ -705,7 +705,7 @@
 - **Verification:** `npm run test`.
 - **Priority:** High
 - **Status:** ✅ Passed
-- **Evidence or Notes:** **12/12 passing** (`node:test`): KB schema/word counts, chunk structure, 15/15 evals, 3/3 refusals, threshold/sort/cap, `out_of_scope` exclusion, chip coverage, edge cases.
+- **Evidence or Notes:** **13/13 passing** (`node:test`): KB schema/word counts, chunk structure, 38/38 evals, 8/8 refusals (incl. non-goal guard + `seed rate` exception), threshold/sort/cap, `out_of_scope` exclusion, chip coverage, edge cases.
 
 ### T2 — API contract tests
 - [ ] **Requirement:** The HTTP contract and failure paths are covered.

@@ -79,13 +79,18 @@ optional stretch and is **not** promised.
   the structural labels `लक्षण / उपाय / सावधानी` are removed *after* expansion, so
   boilerplate present in every chunk can never inflate a score. Chunks tagged
   `out_of_scope` are excluded from candidates (DESIGN §5).
+- **Non-goal guard (before scoring):** a query that names a PRD non-goal
+  (`OUT_OF_SCOPE_TERMS` in `lib/synonyms.ts`: price/market, schemes, loans, cost,
+  fishery, weather) is refused *before* scoring, so an in-KB topic word inside a
+  non-goal question (e.g. "खाद की कीमत") can never leak an answer. `seed rate` /
+  `बीज दर` is exempted because it contains the price word "rate".
 - **Structure convention:** `लक्षण / उपाय / सावधानी` inside each chunk so answers
   are consistent and scannable; source line embedded in the text so citations
   cannot drift.
 - **"What NOT to answer" doc** (market price, schemes, loans, live weather →
   sanctioned referral).
-- **Eval set:** ~30 (question → expected source) pairs — including Roman-Hindi
-  and English paraphrases — + 3 expected refusals,
+- **Eval set:** 38 (question → expected source) pairs — including Roman-Hindi
+  and English paraphrases — + 8 expected refusals,
   run as retrieval-only unit tests (no API quota burn).
 
 ---

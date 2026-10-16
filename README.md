@@ -246,7 +246,7 @@ Full contract: [`docs/DESIGN.md` §5](docs/DESIGN.md).
 ## 🧪 Testing
 
 ```bash
-npm run test     # 12/12 — KB integrity, 15/15 evals, 3/3 refusals, edge cases
+npm run test     # 13/13 — KB integrity, 38/38 evals, 8/8 refusals, edge cases
 npm run lint     # ESLint
 npm run build    # production build
 npm run smoke    # /api/ask + /api/health contract (needs a running server)
@@ -254,7 +254,7 @@ npm run smoke    # /api/ask + /api/health contract (needs a running server)
 
 The suite (`scripts/test-retrieval.mjs`) runs against the real TypeScript
 modules and covers: KB schema and word-count rules, chunk structure, eval-set
-accuracy (**15/15**), refusals (**3/3**), threshold/sort/cap behaviour, the
+accuracy (**38/38**), refusals (**8/8**), threshold/sort/cap behaviour, the
 `out_of_scope` exclusion, chip coverage, and edge cases (empty, whitespace,
 punctuation, mixed language, Devanagari suffixes, 500+ char input). The smoke
 script verifies the HTTP contract and the upstream-failure path without needing a

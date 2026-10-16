@@ -1,5 +1,5 @@
 import type { KBChunk } from "./types";
-import { SYNONYM_MAP } from "./synonyms";
+import { OUT_OF_SCOPE_TERMS, SYNONYM_MAP } from "./synonyms";
 
 /**
  * Deterministic, quota-free retrieval (PRD §6: "retrieval is deterministic
@@ -77,6 +77,22 @@ function normalise(text: string): string {
     .replace(/[^a-z0-9\u0900-\u097f\s]/g, " ")
     .replace(/\s+/g, " ")
     .trim();
+}
+
+/**
+ * A question that names a PRD non-goal (price/market, schemes, loans, cost,
+ * fishery, weather) is refused before scoring. Without this check a question
+ * like "खाद की कीमत" matches the fertiliser chunks on "खाद" and would answer a
+ * market-price question the KB explicitly does not cover.
+ */
+export function isOutOfScope(query: string): boolean {
+  const normalised = normalise(query);
+  if (!normalised) {
+    return false;
+  }
+  // "seed rate" / "बीज दर" is an in-KB topic that contains the price word "rate".
+  const scrubbed = normalised.replace(/seed rate|बीज दर/g, " ");
+  return OUT_OF_SCOPE_TERMS.some((term) => scrubbed.includes(term));
 }
 
 /**
@@ -186,6 +202,12 @@ export function retrieve(
   chunks: readonly KBChunk[],
   limit: number = DEFAULT_LIMIT
 ): RetrievalResult[] {
+  // Refuse PRD non-goals before scoring, so an in-KB topic word inside a
+  // market-price/scheme/loan/weather question can never leak an answer.
+  if (isOutOfScope(query)) {
+    return [];
+  }
+
   const terms = expandQuery(query);
   if (terms.size === 0) {
     return [];
