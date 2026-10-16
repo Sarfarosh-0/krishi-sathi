@@ -1,7 +1,8 @@
 "use client";
 
 import type { RefObject } from "react";
-import { LayoutDashboard, Sprout } from "lucide-react";
+import Image from "next/image";
+import { LayoutDashboard } from "lucide-react";
 import type { Lang } from "@/lib/types";
 import type { UIStrings } from "@/lib/ui-strings";
 
@@ -15,7 +16,7 @@ interface ChatHeaderProps {
   dashboardButtonRef?: RefObject<HTMLButtonElement | null>;
 }
 
-/** Gradient header: title, language toggle, dashboard button. */
+/** Gradient header: brand logo, title, language toggle, dashboard button. */
 export default function ChatHeader({
   lang,
   strings,
@@ -26,7 +27,17 @@ export default function ChatHeader({
   return (
     <header className="header-gradient text-surface shadow-card">
       <div className="mx-auto flex w-full max-w-3xl items-center gap-2 px-4 py-3">
-        <Sprout className="size-7 shrink-0" aria-hidden="true" />
+        {/* Brand mark — the provided logo on its own plate, clipped to a circle
+            so the near-white background reads as an app-icon badge on the
+            gradient. `alt=""`: decorative, the h1 carries the name. */}
+        <Image
+          src="/Logo.png"
+          alt=""
+          width={36}
+          height={36}
+          priority
+          className="size-9 shrink-0 rounded-full bg-surface"
+        />
         <div className="min-w-0 flex-1">
           <h1 lang="hi" className="truncate text-xl leading-tight font-bold">
             कृषि साथी

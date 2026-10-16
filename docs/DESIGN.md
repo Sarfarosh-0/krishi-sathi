@@ -15,7 +15,7 @@ only for demo flair; surfaces stay solid.
 ```
 ┌──────────────────────────────────────────────────────────────┐
 │ ▓▓ HEADER (green→amber gradient) ▓▓                          │
-│  🌱 कृषि साथी        [हिं | EN]      [dashboard icon]        │
+│  [logo] कृषि साथी        [हिं | EN]      [dashboard icon]   │
 │  छोटे किसानों के लिए AI सलाहकार                             │
 ├──────────────────────────────────────────────────────────────┤
 │ ┌ CHIPS (horizontally scrollable) ────────────────────────┐  │
@@ -122,7 +122,7 @@ reason (white over amber-500 is 2.15:1).
 ```
 app/layout.tsx                  fonts, metadata, viewport (safe-area), manifest link
 app/page.tsx                    (client) composition + streaming orchestration
-├─ ChatHeader                   title, gradient bg, lang toggle, dashboard btn
+├─ ChatHeader                   title, gradient bg, lang toggle, dashboard btn, logo
 ├─ ChipRow                      8 chips, scrollable
 ├─ MessageList                  scroll container (aria-live, bottom-pinned)
 │  └─ MessageBubble             user | answer | refusal | upstream | stopped
