@@ -287,6 +287,7 @@ deploy name availability → have a fallback name ready.
 | 6 Integration & polish | ✅ done | 2026-10-15 | E2E pass of FR1–FR14 in Chrome (desktop + 390 px iframe); security headers in `next.config.ts` (CSP without nonces, `nosniff`, `X-Frame-Options: SAMEORIGIN`) verified on `next start`; a11y pass (one global `:focus-visible` ring, `lang` on toasts, `aria-label` on source accordions); `npm audit --omit=dev` = **0** (full = 5 high, one dev-only `braces` chain, no patch — B6); PWA manifest finalised (SVG + 192/512 + maskable 512 + `app/apple-icon.png`); dead code removed (`getMeta`, `scoreChunk`); missing-key path now emits `sources` before `error` (FR10). **Failure drills:** no-key + bad-key → friendly amber snippet card (3 sources + retry, no technical wording), offline → red toast, 429 → amber toast from a **real** 429. **12/12 tests, lint + `next build` green** |
 | — Hardening (pre-deploy) | ✅ done | 2026-10-16 | `pre-production-checklist.md` (85-item evidence-based audit + go/no-go) written, then the in-repo gating items closed: error/global-error/not-found pages; `<main>` landmark + contrast pass (`--primary` green-600→green-700, `--muted` stone-500→stone-600, header amber stop amber-500→amber-700) taking **Lighthouse a11y 0.94 → 1.0**; HSTS + `Referrer-Policy` + `Permissions-Policy` (`microphone=(self)`) + `poweredByHeader:false`; Node pin (`engines` + `.nvmrc` 22). **12/12 tests, 23/23 smoke, lint + build green.** Deploy-dependent items (B3/B4/B6/B7/B8) remain in Phase 7 |
 | — Perf + retrieval hardening | ✅ done | 2026-10-16 | (a) `thinkingLevel: "minimal"` caps thinking → answers **~3–5 s** (was 15–33 s); (b) rate-limit key prefers Vercel's proxy-proof `x-vercel-forwarded-for`; (c) icons regenerated from `public/Logo.png` + iOS install meta + reduced-motion; (d) synonym table broadened (Roman-Hindi + spelling variants: `khaad`, `gehoon`, `dhaan`, `rai`, `gerua`, `बुआई`, …); (e) **pre-scoring non-goal guard** (`isOutOfScope`) so price/scheme/loan/weather questions refuse instead of leaking an answer; evals now **38 hits + 8 refusals**. **13/13 tests, lint + build green** |
+| — Answer skeleton loader | ✅ done | 2026-10-16 | `components/AnswerSkeleton.tsx` (three `animate-pulse` bars on the `muted` token; decorative, with the localized "सोच रहा हूँ…" as `sr-only` status) replaces the spinner in `MessageBubble` while `status === "streaming" && text === ""`; the streaming answer carries the same `min-h-[4.5rem]` reserve so the skeleton→first-token swap does not shift layout. **Verified in a live browser with a mocked NDJSON stream:** skeleton 190 px (3 pulses) → one-word answer 190 px (1 caret pulse, no shift); rejection → upstream card + retry, 0 pulses; chip #8 → amber refusal + advisory, 0 pulses. **13/13 tests, lint + build green** |
 | 7 Deploy & repo finish | ⬜ not started | — | needs B2 |
 
 Legend: ⬜ not started · 🔄 in progress · ✅ done (criteria verified) · ⛔ blocked
@@ -336,6 +337,19 @@ Legend: ⬜ not started · 🔄 in progress · ✅ done (criteria verified) · �
   and the alias ship together; (4) the separate "out-of-KB crop + in-KB topic"
   case ("टमाटर में खाद कब डालें" → fertiliser advice) needs crop gating and is
   recorded as open rather than silently fixed.
+- 2026-10-16 · Answer skeleton loader · Replaced the single-line thinking
+  spinner with an `AnswerSkeleton` (three pulsing bars) shown while the first
+  answer token is in flight; the localized "सोच रहा हूँ…" cue moved to `sr-only`
+  so the loading state is still announced. The streaming answer reuses the
+  skeleton's `min-h-[4.5rem]` reserve, so the swap causes no layout shift ·
+  Learned: (1) a multi-line skeleton would normally *introduce* the very layout
+  shift it is meant to smooth (a 190 px placeholder collapsing to a ~27 px first
+  line), so the reserve has to be shared by both states — measured 190 → 190 px
+  with a one-word answer; (2) the skeleton is only ever replaced by a terminal
+  state (done/refused/upstream/stopped), so a failure can never leave it on
+  screen; (3) `animate-pulse` + the `muted` token keep it on-theme with no new
+  dependency, and the existing global `prefers-reduced-motion` rule still stills
+  it.
 
 ## Blockers
 

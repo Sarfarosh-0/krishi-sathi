@@ -71,7 +71,7 @@ body {
   outline-offset: 2px;
 }
 
-/* Respect the OS "reduce motion" setting (WCAG 2.3): the thinking spinner and
+/* Respect the OS "reduce motion" setting (WCAG 2.3): the answer skeleton and
    the streaming caret stop animating for users who ask for less motion. */
 @media (prefers-reduced-motion: reduce) {
   *,

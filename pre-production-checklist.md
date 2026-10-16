@@ -280,7 +280,7 @@
 
 ### E6 — Offline / network drop
 - [ ] **Requirement:** A failed fetch shows the offline toast and a recoverable card.
-- **Risk:** Silent failure / stuck spinner.
+- **Risk:** Silent failure / stuck skeleton.
 - **Verification:** Patch `fetch` to reject (or go offline) and confirm the red toast + fallback card + retry.
 - **Priority:** High
 - **Status:** ✅ Passed
@@ -296,7 +296,7 @@
 
 ### E8 — Stream ends without a terminator
 - [ ] **Requirement:** A stream that ends without `done`/`error` is treated as `upstream`.
-- **Risk:** Hanging "thinking" bubble; inconsistent state.
+- **Risk:** Hanging loading bubble; inconsistent state.
 - **Verification:** Review the terminator check in `page.tsx`; simulate a truncated stream.
 - **Priority:** Medium
 - **Status:** ✅ Passed
@@ -576,7 +576,7 @@
 - **Verification:** `grep` for `prefers-reduced-motion`; enable the OS setting.
 - **Priority:** Medium
 - **Status:** ✅ Passed
-- **Evidence or Notes:** `app/globals.css` now collapses animation/transition durations under `@media (prefers-reduced-motion: reduce)`, so the thinking spinner and the streaming caret stop animating for users who request less motion.
+- **Evidence or Notes:** `app/globals.css` now collapses animation/transition durations under `@media (prefers-reduced-motion: reduce)`, so the answer skeleton and the streaming caret stop animating for users who request less motion.
 
 ### U8 — Responsive layout & safe areas
 - [ ] **Requirement:** Usable at 390 px with no horizontal overflow; notches respected.
@@ -597,10 +597,10 @@
 ### U10 — Loading, empty, and error states
 - [ ] **Requirement:** Clear states for loading, empty transcript, empty history, and failures.
 - **Risk:** UI looks frozen or broken.
-- **Verification:** Observe "thinking" row, streaming caret, empty-state card, empty-history copy, and the failure cards.
+- **Verification:** Observe the answer skeleton, streaming caret, empty-state card, empty-history copy, and the failure cards.
 - **Priority:** Medium
 - **Status:** ✅ Passed
-- **Evidence or Notes:** "सोच रहा हूँ…" row + streaming caret; empty-transcript card; empty-history copy; amber refusal/upstream cards; red offline toast.
+- **Evidence or Notes:** answer skeleton (three pulsing bars) + "सोच रहा हूँ…" `sr-only` + streaming caret; empty-transcript card; empty-history copy; amber refusal/upstream cards; red offline toast. The skeleton is swapped for the terminal state on refusal/upstream/stop, so it never lingers.
 
 ### U11 — Form validation & predictable behaviour
 - [ ] **Requirement:** Validation is inline and consistent; Enter sends, Shift+Enter newlines, IME respected.

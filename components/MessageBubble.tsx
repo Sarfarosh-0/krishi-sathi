@@ -1,10 +1,11 @@
 "use client";
 
-import { AlertTriangle, Loader2, RotateCcw } from "lucide-react";
+import { AlertTriangle, RotateCcw } from "lucide-react";
 import type { ChatMessage } from "@/lib/chat";
 import { renderAnswer, toSpeechText } from "@/lib/markdown";
 import type { Lang } from "@/lib/types";
 import { UI_STRINGS, type UIStrings } from "@/lib/ui-strings";
+import AnswerSkeleton from "./AnswerSkeleton";
 import SourceAccordion from "./SourceAccordion";
 import TTSButton from "./TTSButton";
 
@@ -74,15 +75,17 @@ export default function MessageBubble({
           </p>
         )}
 
-        {/* Thinking indicator while the model works (15-33 s), then live tokens. */}
+        {/* Skeleton while the first token is in flight (~3-5 s), then live tokens.
+            The streaming answer keeps the skeleton's `min-h-[4.5rem]` reserve, so
+            the swap from skeleton to text causes no layout shift. */}
         {streaming && message.text.length === 0 ? (
-          <p lang={message.lang} className="flex items-center gap-2 text-muted">
-            <Loader2 className="size-4 animate-spin" aria-hidden="true" />
-            {contentStrings.thinking}
-          </p>
+          <AnswerSkeleton label={contentStrings.thinking} lang={message.lang} />
         ) : (
           message.text.length > 0 && (
-            <div lang={message.lang} className="answer-text text-ink">
+            <div
+              lang={message.lang}
+              className={`answer-text text-ink ${streaming ? "min-h-[4.5rem]" : ""}`}
+            >
               {renderAnswer(message.text)}
               {streaming && (
                 <span

@@ -128,7 +128,8 @@ app/page.tsx                    (client) composition + streaming orchestration
 │  └─ MessageBubble             user | answer | refusal | upstream | stopped
 │     ├─ SourceAccordion        expandable source text (Lucide ChevronDown)
 │     ├─ TTSButton              🔊 सुनें / रोकें (speechSynthesis)
-│     └─ (thinking row / streaming caret)
+│     ├─ AnswerSkeleton         pulsing bars until the first token arrives
+│     └─ (streaming caret)
 ├─ Composer                     Mic button, textarea, Send ⇄ Stop
 ├─ Toast                        offline / rate-limit notices (role="status")
 └─ DashboardModal               modality + tabs: device-local impact + history (FR12)
@@ -381,7 +382,7 @@ all seven answerable chips retrieve a chunk and that #8 does not.
 |---|---|---|
 | Messages (session) | React state (`useState`) | reset on refresh; `ChatMessage` in `lib/chat.ts` |
 | Streaming partial | React state (per message) | tokens appended live; one `AbortController` for the active request |
-| **Thinking state** | derived: `status === "streaming" && text === ""` | the assistant bubble shows a spinner + **"सोच रहा हूँ…"** from send until the first token arrives (with `thinkingLevel: "minimal"` the first token usually lands in ~3–5 s). The `sources` accordion can already be on screen while this is showing, which is the whole point of emitting `sources` first |
+| **Skeleton state** | derived: `status === "streaming" && text === ""` | the assistant bubble shows the **`AnswerSkeleton`** (three pulsing bars, `min-h-[4.5rem]`) from send until the first token arrives (with `thinkingLevel: "minimal"` the first token usually lands in ~3–5 s); the localized "सोच रहा हूँ…" text is `sr-only`, so the loading cue is still announced. The `sources` accordion can already be on screen while this is showing, which is the whole point of emitting `sources` first |
 | Draft question | React state (`useState`) | cleared on send; truncated to 500 chars client-side as well |
 | `lang` | `useSyncExternalStore` over localStorage `ks:lang` | Hindi default; the document `lang` mirrors it |
 | Capability (TTS / voice) | `useSyncExternalStore` probe (`useCapability`) | `null` on the server and the first hydration pass, then a real boolean — no effect, no `setState` |
@@ -398,10 +399,15 @@ all seven answerable chips retrieve a chunk and that #8 does not.
 
 ## 7. Interaction rules
 
-- **Send → thinking → stream:** sending appends the user bubble and an empty
-  assistant bubble that shows a spinner + "सोच रहा हूँ…". The `sources`
-  accordion renders as soon as the `sources` event arrives — *before* any token.
-  Tokens then append live with a pulsing caret. The list pins to the bottom
+- **Send → skeleton → stream:** sending appends the user bubble and an empty
+  assistant bubble that shows an **answer skeleton** — three pulsing bars
+  (`AnswerSkeleton`) standing in for the answer copy, with the localized
+  "सोच रहा हूँ…" text announced to screen readers only. The `sources` accordion
+  renders as soon as the `sources` event arrives — *before* any token. The first
+  token replaces the skeleton in place (the streaming answer keeps the same
+  `min-h-[4.5rem]` reserve, so there is no layout shift); tokens then append live
+  with a pulsing caret. A refusal, upstream error, or stop swaps the skeleton for
+  that terminal state — it is never left on screen. The list pins to the bottom
   while streaming unless the farmer scrolls up (within ~80 px).
 - **Stop:** while a request is in flight the composer's send button becomes
   "रोकें"; it aborts via `AbortController`. A partial answer is kept and marked
