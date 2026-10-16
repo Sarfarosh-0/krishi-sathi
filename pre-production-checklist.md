@@ -15,6 +15,13 @@
 > guard S4, reduced-motion U7 and the iOS install meta U12. The *Status* and
 > *Evidence* fields below reflect the post-fix state; resolved rows say so
 > explicitly.
+>
+> **Retrieval update (2026-10-16, after commit `2e51b15`):** the synonym table was
+> broadened (Roman-Hindi + spelling variants) and a **pre-scoring non-goal guard**
+> was added so market-price / scheme / loan / weather questions refuse instead of
+> leaking an answer (see S13, E4, T1). The eval set is now **38 hits + 8 refusals**.
+> `file:line` references are captured at audit commit `afcd3a6`; where a file has
+> since moved on, the named symbol is the authoritative pointer.
 
 ---
 
@@ -73,7 +80,7 @@
 - **Verification:** `grep -rn "GEMINI_API_KEY" app lib components`; `grep -rn "NEXT_PUBLIC_" app lib components`; `git check-ignore .env.local`; inspect served HTML/JS for the key.
 - **Priority:** Critical
 - **Status:** ✅ Passed
-- **Evidence or Notes:** Only two references exist, both in `route.ts` (line 353 read, line 355 error log). `NEXT_PUBLIC_` grep = 0 matches. `.env.local` is gitignored (`.gitignore:40`). `.env.example` committed with an empty value. Served HTML checked — no key material.
+- **Evidence or Notes:** Only two references exist, both in `route.ts` (the `GEMINI_API_KEY` read and the missing-key error log). `NEXT_PUBLIC_` grep = 0 matches. `.env.local` is gitignored (`.gitignore:40`). `.env.example` committed with an empty value. Served HTML checked — no key material.
 
 ### S2 — No client-side or dependency-embedded secrets
 - [ ] **Requirement:** No secret, token, or credential is embedded in client code, `public/`, or committed files.
@@ -89,7 +96,7 @@
 - **Verification:** `npm run smoke` (asserts non-POST→405, unparseable→400, empty/missing→400, bad `lang`→400, >500-char→200 truncated).
 - **Priority:** Critical
 - **Status:** ✅ Passed
-- **Evidence or Notes:** `route.ts:305–330`; smoke suite covers all five cases (prior run: 22/22 normal). Automated tests are in `scripts/smoke-api.mjs` but are **not run in CI** (see T1).
+- **Evidence or Notes:** `route.ts` POST handler (validation + truncation); smoke suite covers all five cases (prior run: 22/22 normal). Automated tests are in `scripts/smoke-api.mjs` but are **not run in CI** (see T1).
 
 ### S4 — Request body size limit
 - [ ] **Requirement:** An oversized JSON body cannot exhaust memory or CPU before validation.
@@ -153,7 +160,7 @@
 - **Verification:** Review `isSameOrigin()`; `curl -X POST -H "Origin: https://evil.example"` → expect 403.
 - **Priority:** High
 - **Status:** ✅ Passed
-- **Evidence or Notes:** `route.ts:308–310` returns 403 for cross-origin `Origin`. **Not covered by an automated test** (`smoke-api.mjs` omits the 403 case) → add coverage (T4).
+- **Evidence or Notes:** `route.ts` `isSameOrigin()` returns 403 for cross-origin `Origin`. **Not covered by an automated test** (`smoke-api.mjs` omits the 403 case) → add coverage (T4).
 
 ### S12 — Rate limiting & abuse prevention
 - [ ] **Requirement:** 10 requests/min/IP, enforced server-side, returning `429 {error:"rate_limit"}`.
@@ -161,7 +168,7 @@
 - **Verification:** `npm run smoke` (burst test); manual burst on a running server.
 - **Priority:** High
 - **Status:** ✅ Passed (with known limitation)
-- **Evidence or Notes:** `route.ts:64–79`; verified 429 on the 11th request (curl burst) and in the browser. **Limitation:** in-memory and **per serverless instance** — not global. Under concurrent Vercel instances the effective limit multiplies (see S13).
+- **Evidence or Notes:** `route.ts` `isRateLimited()` (10/min window); verified 429 on the 11th request (curl burst) and in the browser. **Limitation:** in-memory and **per serverless instance** — not global. Under concurrent Vercel instances the effective limit multiplies (see S13).
 
 ### S13 — Rate-limit key integrity & distributed bypass
 - [ ] **Requirement:** The limiter key cannot be trivially spoofed, and behaviour is correct behind the production proxy.
@@ -193,7 +200,7 @@
 - **Verification:** Review all `console.*` in `app/`; inspect runtime logs during a request.
 - **Priority:** High
 - **Status:** ✅ Passed
-- **Evidence or Notes:** Only two server logs: `route.ts:265` logs `{attempt, status}` only; `route.ts:355` logs a static "key not set" message. No prompt/answer/key. No client-side `console.*` in app code.
+- **Evidence or Notes:** Only two server logs: `route.ts` retry log emits `{attempt, status}` only; `route.ts` missing-key log emits a static "key not set" message. No prompt/answer/key. No client-side `console.*` in app code.
 
 ### S17 — SSRF / outbound-request safety
 - [ ] **Requirement:** No user-controlled URL is fetched server-side.
@@ -237,7 +244,7 @@
 - **Verification:** `smoke-api.mjs` (empty question → 400); UI send button disabled on empty.
 - **Priority:** High
 - **Status:** ✅ Passed
-- **Evidence or Notes:** `Composer.tsx:32` disables send; `route.ts:328` rejects. Smoke suite asserts 400 `bad_input`.
+- **Evidence or Notes:** `Composer` disables send; `route.ts` POST validation rejects. Smoke suite asserts 400 `bad_input`.
 
 ### E2 — Over-long input
 - [ ] **Requirement:** Questions > 500 chars are truncated, not rejected; the textarea is capped.
@@ -245,7 +252,7 @@
 - **Verification:** `smoke-api.mjs` (>500-char → 200 + `done`); `Composer` `maxLength=500`.
 - **Priority:** Medium
 - **Status:** ✅ Passed
-- **Evidence or Notes:** `route.ts:327` `slice(0,500)`; `Composer.tsx:86` `maxLength={500}`; smoke test asserts truncation.
+- **Evidence or Notes:** `route.ts` `slice(0, MAX_QUESTION_CHARS)`; `Composer` `maxLength={500}`; smoke test asserts truncation.
 
 ### E3 — Malformed / unexpected request bodies
 - [ ] **Requirement:** Non-JSON or wrong-shape bodies return 400, never 500.
@@ -253,7 +260,7 @@
 - **Verification:** `smoke-api.mjs` (unparseable JSON → 400; missing `question` → 400).
 - **Priority:** High
 - **Status:** ✅ Passed
-- **Evidence or Notes:** `route.ts:316–326` try/catch + shape check. Smoke suite covers both.
+- **Evidence or Notes:** `route.ts` JSON try/catch + shape check. Smoke suite covers both.
 
 ### E4 — Out-of-scope question (deterministic refusal)
 - [ ] **Requirement:** Below-threshold questions refuse with the server refusal text + referral, with **zero** model calls.
@@ -261,7 +268,7 @@
 - **Verification:** `smoke-api.mjs` (refusal: one token = server text, no `sources`, `refused:true`, sub-2s).
 - **Priority:** Critical
 - **Status:** ✅ Passed
-- **Evidence or Notes:** `route.ts:336–341`; `lib/retrieval.ts` threshold `5`; `out_of_scope` chunk excluded from candidates. Verified zero-call via sub-2s latency and absence of `sources`.
+- **Evidence or Notes:** `route.ts` refusal branch; `lib/retrieval.ts` threshold `5` plus the pre-scoring **non-goal guard** (`isOutOfScope`); `out_of_scope` chunk excluded from candidates. Verified zero-call via sub-2s latency and absence of `sources`.
 
 ### E5 — Model / network failure (upstream)
 - [ ] **Requirement:** On Gemini 429/5xx/timeout the client shows a friendly snippet-fallback card + retry, never a crash.
@@ -277,7 +284,7 @@
 - **Verification:** Patch `fetch` to reject (or go offline) and confirm the red toast + fallback card + retry.
 - **Priority:** High
 - **Status:** ✅ Passed
-- **Evidence or Notes:** `page.tsx:286–289` → `offlineToast` (danger) + `upstream` card. Verified via fetch-rejection drill (red toast, `lang="hi"`, retry present).
+- **Evidence or Notes:** `page.tsx` fetch-rejection path → `offlineToast` (danger) + `upstream` card. Verified via fetch-rejection drill (red toast, `lang="hi"`, retry present).
 
 ### E7 — Rate limit (429)
 - [ ] **Requirement:** A 429 shows the amber rate-limit toast, not a generic error.
@@ -285,15 +292,15 @@
 - **Verification:** Prime the per-IP window and submit; assert `role="status"` amber toast.
 - **Priority:** Medium
 - **Status:** ✅ Passed
-- **Evidence or Notes:** `page.tsx:219–221`. Verified against a real 429: toast `role="status"`, `lang="hi"`, `bg-harvest` (#F59E0B), text "थोड़ा रुकिए, फिर कोशिश करें।"
+- **Evidence or Notes:** `page.tsx` 429 branch. Verified against a real 429: toast `role="status"`, `lang="hi"`, `bg-harvest` (#F59E0B), text "थोड़ा रुकिए, फिर कोशिश करें।"
 
 ### E8 — Stream ends without a terminator
 - [ ] **Requirement:** A stream that ends without `done`/`error` is treated as `upstream`.
 - **Risk:** Hanging "thinking" bubble; inconsistent state.
-- **Verification:** Review `page.tsx:270–273`; simulate a truncated stream.
+- **Verification:** Review the terminator check in `page.tsx`; simulate a truncated stream.
 - **Priority:** Medium
 - **Status:** ✅ Passed
-- **Evidence or Notes:** `terminated` flag logic in `page.tsx:236–273`; `lib/types.ts` documents the contract. (Simulated-truncation test not automated.)
+- **Evidence or Notes:** `terminated` flag logic in `page.tsx`; `lib/types.ts` documents the contract. (Simulated-truncation test not automated.)
 
 ### E9 — Duplicate submissions / concurrent requests
 - [ ] **Requirement:** The UI cannot start a second request while one is in flight; the server still rate-limits.
@@ -301,7 +308,7 @@
 - **Verification:** Review `send()` guard + disabled controls; double-click a chip.
 - **Priority:** Medium
 - **Status:** ✅ Passed
-- **Evidence or Notes:** `page.tsx:112` early-returns if `abortRef.current` is set; composer/chips disabled while `loading`; server limiter is the backstop.
+- **Evidence or Notes:** `page.tsx` `send()` early-returns if `abortRef.current` is set; composer/chips disabled while `loading`; server limiter is the backstop.
 
 ### E10 — Stop / cancel mid-stream
 - [ ] **Requirement:** Pressing stop aborts the request, keeps partial text, drops an empty placeholder, and stops server-side token spend.
@@ -309,7 +316,7 @@
 - **Verification:** Press stop during streaming; observe `AbortController` abort and `status:"stopped"`.
 - **Priority:** Medium
 - **Status:** ✅ Passed
-- **Evidence or Notes:** `page.tsx:274–289` + `route.ts` checks `signal.aborted` to stop paying for tokens. (Manually verified in Phase 4; not automated.)
+- **Evidence or Notes:** `page.tsx` stop handler + `route.ts` checks `signal.aborted` to stop paying for tokens. (Manually verified in Phase 4; not automated.)
 
 ### E11 — Unsupported browser APIs
 - [ ] **Requirement:** TTS/voice controls hide (with a hint) when `speechSynthesis`/`webkitSpeechRecognition` are absent; never crash.
@@ -333,7 +340,7 @@
 - **Verification:** Review `parseEvent` + buffering; feed garbage lines.
 - **Priority:** Low
 - **Status:** ✅ Passed
-- **Evidence or Notes:** `parseEvent` returns `null` on non-objects (`page.tsx:37–44`); newline buffering handles chunk boundaries and a trailing tail.
+- **Evidence or Notes:** `parseEvent` (`page.tsx`) returns `null` on non-objects; newline buffering handles chunk boundaries and a trailing tail.
 
 ### E14 — Unhandled client render errors
 - [ ] **Requirement:** A React error boundary renders a friendly fallback instead of Next's default error screen.
@@ -369,7 +376,7 @@
 - **Verification:** `smoke-api.mjs` advisory-count check; inspect `done` events.
 - **Priority:** High
 - **Status:** ✅ Passed
-- **Evidence or Notes:** Emitted in `done` (`route.ts:288`); prompt instructs the model not to append it; verified exactly once.
+- **Evidence or Notes:** Emitted in `done` (`route.ts`); prompt instructs the model not to append it; verified exactly once.
 
 ### R3 — Citations are grounded
 - [ ] **Requirement:** The model cites at least one retrieved chunk id in a successful answer.
@@ -393,7 +400,7 @@
 - **Verification:** Review `sourcesFromIds`; remove/rename a chunk id in a copy and reopen an entry.
 - **Priority:** Low
 - **Status:** 🟡 In Progress
-- **Evidence or Notes:** `sourcesFromIds` (`lib/chat.ts:68`) `flatMap`s and **silently skips** ids not found. Correct today (KB is bundled and versioned with the app), but there is no guard/telemetry if a chunk disappears. *Low risk.*
+- **Evidence or Notes:** `sourcesFromIds` (`lib/chat.ts`) `flatMap`s and **silently skips** ids not found. Correct today (KB is bundled and versioned with the app), but there is no guard/telemetry if a chunk disappears. *Low risk.*
 
 ### R6 — Client state consistency during failures
 - [ ] **Requirement:** Counters/history stay consistent across success, refusal, upstream, and stop.
@@ -401,7 +408,7 @@
 - **Verification:** Review counter transitions; drive each terminal state.
 - **Priority:** Medium
 - **Status:** ✅ Passed
-- **Evidence or Notes:** `asked` on send; `answered` only on a non-empty `done`; `refused` on the refusal path only (`page.tsx:169–194`). Verified in Phase 5 (chip #8 → asked 2 / answered 1 / refused 1).
+- **Evidence or Notes:** `asked` on send; `answered` only on a non-empty `done`; `refused` on the refusal path only (`page.tsx` counter transitions). Verified in Phase 5 (chip #8 → asked 2 / answered 1 / refused 1).
 
 ### R7 — Health check / warm-up
 - [ ] **Requirement:** `GET /api/health` returns `200 {ok:true}`, is side-effect free, and invokes the function (not statically cached).
@@ -409,7 +416,7 @@
 - **Verification:** `curl` the endpoint; confirm it is dynamic (uses `connection()`).
 - **Priority:** Medium
 - **Status:** ✅ Passed
-- **Evidence or Notes:** `app/api/health/route.ts` uses `await connection()` so it is not prerendered; returns `{ok:true}`; no Gemini call. Warm-up is fired on page load (`page.tsx:69–71`).
+- **Evidence or Notes:** `app/api/health/route.ts` uses `await connection()` so it is not prerendered; returns `{ok:true}`; no Gemini call. Warm-up is fired on page load (`page.tsx`).
 
 ### R8 — Error handling coverage on the server
 - [ ] **Requirement:** Every failure path returns a defined status/event; no unhandled rejection surfaces a raw 500.
@@ -469,7 +476,7 @@
 - **Verification:** Confirm `maxDuration` is honored on the plan; measure p95 latency.
 - **Priority:** High
 - **Status:** 🟡 In Progress
-- **Evidence or Notes:** `maxDuration = 60`, 55 s in-route deadline, ≤4 retries (`route.ts:15–24`). With `thinkingLevel: "minimal"` (verified 2026-10-16) answers measured **~3–5 s** instead of the 15–33 s full-thinking path, so the 60 s ceiling is no longer a practical risk. **Unverified:** the exact plan limit (see D4).
+- **Evidence or Notes:** `maxDuration = 60`, 55 s in-route deadline, ≤4 retries (`route.ts` config constants). With `thinkingLevel: "minimal"` (verified 2026-10-16) answers measured **~3–5 s** instead of the 15–33 s full-thinking path, so the 60 s ceiling is no longer a practical risk. **Unverified:** the exact plan limit (see D4).
 
 ### P4 — Cold start
 - [ ] **Requirement:** The first real request does not pay a full cold start.
@@ -501,7 +508,7 @@
 - **Verification:** Load test the deployed endpoint; review limiter memory bounds.
 - **Priority:** Medium
 - **Status:** ⬜ Not Started
-- **Evidence or Notes:** No load/concurrency test exists. Limiter memory is bounded by `MAX_TRACKED_IPS = 5000` with lazy cleanup (`route.ts:26,68–75`) — sound, but **not load-tested**.
+- **Evidence or Notes:** No load/concurrency test exists. Limiter memory is bounded by `MAX_TRACKED_IPS = 5000` with lazy cleanup (`route.ts` `isRateLimited`) — sound, but **not load-tested**.
 
 ### P8 — Retrieval performance
 - [ ] **Requirement:** Retrieval is fast and scales with KB size.
@@ -553,7 +560,7 @@
 - **Verification:** Tab/Shift+Tab/Esc through the app and the dashboard modal.
 - **Priority:** High
 - **Status:** ✅ Passed
-- **Evidence or Notes:** `DashboardModal` implements `role="dialog"`+`aria-modal`, Tab trap, Esc, backdrop close, scroll lock, and focus return (`page.tsx:313–316`). Visible focus ring is global (`app/globals.css`). Verified in Phase 5/6 (focus returned to the exact trigger).
+- **Evidence or Notes:** `DashboardModal` implements `role="dialog"`+`aria-modal`, Tab trap, Esc, backdrop close, scroll lock, and focus return (`page.tsx`). Visible focus ring is global (`app/globals.css`). Verified in Phase 5/6 (focus returned to the exact trigger).
 
 ### U6 — Language attributes
 - [ ] **Requirement:** `lang` is correct on the document and on every text node, including past messages.
@@ -629,7 +636,7 @@
 - **Verification:** `npm run build`.
 - **Priority:** Critical
 - **Status:** ✅ Passed
-- **Evidence or Notes:** `next build` (Turbopack) compiled successfully; TypeScript passed; routes `/`, `/_not-found`, `/api/ask`, `/api/health`, `/apple-icon.png`, `/manifest.webmanifest`.
+- **Evidence or Notes:** `next build` (Turbopack) compiled successfully; TypeScript passed; routes `/`, `/_not-found`, `/api/ask`, `/api/health`, `/apple-icon.png`, `/icon.png`, `/manifest.webmanifest`.
 
 ### D3 — HTTPS & transport security
 - [ ] **Requirement:** The site is served over HTTPS and enforces it.
@@ -653,7 +660,7 @@
 - **Verification:** Confirm the Vercel plan's max function duration; observe a slow answer end cleanly.
 - **Priority:** High
 - **Status:** ⬜ Not Started
-- **Evidence or Notes:** `maxDuration = 60` (`route.ts:15`). Depends on the chosen plan (Hobby allows up to 60 s for Node functions, but this is **unverified** for this project).
+- **Evidence or Notes:** `maxDuration = 60` (`route.ts`). Depends on the chosen plan (Hobby allows up to 60 s for Node functions, but this is **unverified** for this project).
 
 ### D6 — Rollback procedure
 - [ ] **Requirement:** A documented, tested rollback path exists.
@@ -868,10 +875,10 @@ deliberately out-of-scope CI/CD (D8) and the accepted dev-only `braces` advisory
 
 | Check | Command / method | Result |
 |---|---|---|
-| Unit/retrieval tests | `npm run test` | **12/12 passing** (re-run 2026-10-16) |
+| Unit/retrieval tests | `npm run test` | **13/13 passing** — 38/38 evals, 8/8 refusals (re-run 2026-10-16) |
 | API contract smoke | `npm run smoke` | **23/23 passing** (2026-10-16; 1 real Gemini call, 33.6 s) |
 | Lint | `npm run lint` | Clean (no output) |
-| Production build | `npm run build` | Compiled successfully; TS passed; 6 routes |
+| Production build | `npm run build` | Compiled successfully; TS passed; 7 routes |
 | Prod dependency audit | `npm audit --omit=dev` | **0 vulnerabilities** |
 | Full dependency audit | `npm audit` | 5 high, 0 critical (dev-only `braces` chain, no patch) |
 | Response headers (before) | `curl -sD - -o NUL http://localhost:3000/` | CSP, `nosniff`, `SAMEORIGIN` present; **no HSTS / Referrer-Policy / Permissions-Policy**; `X-Powered-By: Next.js` present |

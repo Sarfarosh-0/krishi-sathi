@@ -12,7 +12,7 @@ refuses** (with a KVK referral) when the answer is not covered.
 [![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind-4-06B6D4?logo=tailwindcss&logoColor=white)](https://tailwindcss.com)
 [![Model: Gemma 4](https://img.shields.io/badge/Model-gemma--4--26b--a4b--it-16A34A)](https://ai.google.dev/gemma)
-[![Tests](https://img.shields.io/badge/tests-12%20passing-16A34A)](#-testing)
+[![Tests](https://img.shields.io/badge/tests-13%20passing-16A34A)](#-testing)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue)](#-license)
 
 **[Problem](#-the-problem) · [Features](#-features) · [How it works](#-how-it-works) · [Quick start](#-quick-start) · [API](#-api) · [Docs](#-documentation)**
@@ -75,8 +75,10 @@ flowchart TD
 2. **Retrieve** — a pure TypeScript scorer ranks the bundled KB chunks
    (`crop match 3 > tag hit 2 > token overlap 1`, threshold `5`), with a synonym
    table expanding farmer phrasing (e.g. *पीली इल्टी* = *yellow stem borer*).
-3. **Refuse or answer** — below the threshold the route refuses immediately
-   (no API call). Above it, the top-3 chunks become fenced prompt context.
+3. **Refuse or answer** — a question that names a non-goal topic (market price,
+   schemes, loans, weather) or scores below the threshold is refused
+   immediately (no API call). Above it, the top-3 chunks become fenced prompt
+   context.
 4. **Generate** — `gemma-4-26b-a4b-it` streams an answer grounded in the context,
    with `thinkingLevel: "minimal"` (the one accepted value) so answers arrive in
    ~3–5 s rather than the ~15–33 s full-thinking path.
@@ -182,8 +184,9 @@ line:
  "advisory":"यह सामान्य सलाह है …"}          // terminates the stream
 ```
 
-- **Refusal path** (below threshold, **no Gemini call**): no `sources` line; the
-  localized refusal is delivered as exactly one `token`, then `done` with
+- **Refusal path** (below threshold, or a non-goal topic such as price / schemes
+  / loans / weather — **no Gemini call**): no `sources` line; the localized
+  refusal is delivered as exactly one `token`, then `done` with
   `refused: true`.
 - **Upstream failure** (Gemini 429/5xx/transport/timeout): after retries, one
   `{"type":"error","error":"upstream"}` line, then close. The client shows the
@@ -220,7 +223,10 @@ Full contract: [`docs/DESIGN.md` §5](docs/DESIGN.md).
 - **One out-of-scope document** lists what the advisor does *not* cover (market
   prices, schemes, loans, live weather); chunks tagged `out_of_scope` are
   excluded from retrieval, so those questions always hit the refusal path.
-- **Eval set:** 15 (question → expected source) pairs + 3 expected refusals, run
+- **Non-goal guard:** a question naming a non-goal topic (market price, schemes,
+  loans, cost, fishery, weather) is refused **before scoring**, so an in-KB topic
+  word inside such a question can never leak an answer.
+- **Eval set:** 38 (question → expected source) pairs + 8 expected refusals, run
   as retrieval-only tests — no API quota burned.
 
 ## 🔒 Security & privacy

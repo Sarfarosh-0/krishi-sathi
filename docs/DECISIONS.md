@@ -42,22 +42,22 @@ optional stretch and is **not** promised.
 
 - **Pipeline (RAG-lite):** user question → Vercel API route → keyword/tag
   retrieval (top-3 chunks) → `gemma-4-26b-a4b-it` generates the answer
-  (temperature ~0.3) → response `{ answer, sources[], refused, lang }` rendered
-  with a disclaimer.
+  (temperature 0.3, `thinkingLevel: "minimal"`) → streamed as NDJSON
+  (`sources → token* → done`) and rendered with a disclaimer (DESIGN §5).
 - **Refusal:** below the retrieval threshold the deterministic refusal path runs
   (no API call). The prompt enforces:
   *"मुझे इस सवाल का जवाब अपनी जानकारी में नहीं मिला… कृषि विज्ञान केंद्र से संपर्क करें।"*
   Every answer ends with:
   *"यह सामान्य सलाह है — स्थानीय कृषि विशेषज्ञ से पुष्टि करें।"*
 - **8 demo chips** (Hindi shown / English): wheat yellow stem borer · mustard
-  fertiliser timing · paddy irrigation · wheat blue rust · neem spray safety ·
+  fertiliser timing · paddy irrigation · wheat rust · neem spray safety ·
   pre-rain actions · onion sowing · fish-farming cost (deliberately
   out-of-KB → refusal demo).
 - **Language:** Hindi ⇄ English toggle (UI strings + reply language; does not
   re-query).
 - **Fallbacks:** API timeout / 429 / 5xx → show retrieved KB snippets + friendly
-  Hindi message (`refused: true`), never a crash; empty input disabled;
-  questions > 500 chars truncated; offline toast.
+  localized message (`error: "upstream"` after retries), never a crash; empty
+  input disabled; questions > 500 chars truncated; offline toast.
 
 ---
 
@@ -65,14 +65,15 @@ optional stretch and is **not** promised.
 
 - **Source:** sample KB scaffolded in-repo, clearly labelled as sample content in
   the README (no real KVK/ICAR documents assumed).
-- **8–15 chunks**, 80–150 words each, pre-chunked, **Hindi + English paired**
+- **14 chunks**, 80–150 words each, pre-chunked, **Hindi + English paired**
   (`text` / `textEn`).
 - **Metadata per chunk:** `id, title, titleEn, crop[], season, tags[], text,
   textEn, source, priority`.
 - **Scoring:** crop match (strongest) > tags > token overlap;
   **synonym table** (`lib/synonyms.ts`, e.g. "पीली इल्टी" =
   "yellow stem borer" = "borer") expands queries before scoring.
-- **Calibrated weights (locked in Phase 2, after a 30/30 eval pass):** crop `3`;
+- **Calibrated weights (locked in Phase 2, after the then-15-case eval pass; the
+  set has since grown to 38):** crop `3`;
   each distinct tag hit `2` (max 2 hits); each distinct token-overlap hit `1`
   (max 4 hits); **threshold `5`** — below it the refusal path runs. Queries are
   lower-cased and reduced to Devanagari + ASCII alphanumerics; question words and
@@ -120,8 +121,8 @@ frameworks beyond Next.js.
   - **Impact counter** — device-local and honestly labelled *"from this device"*:
     questions asked / answered / refused, KB coverage stats (crops, docs,
     languages).
-  - **History** — localStorage `{ q, answer, sources, lang, ts }`, capped at ~50
-    entries, clear-all button, click to re-open.
+  - **History** — localStorage `{ id, q, answer, sources, lang, ts, refused }`,
+    capped at 50 entries, clear-all button, click to re-open.
 - Wrapped in a `useSyncExternalStore` external store + try/catch (Safari private
   mode can throw on read *and* write); versioned `ks:history:v1` / `ks:impact:v1`
   keys, cap 50, clear-all + per-item delete, and click-to-reopen that replays
@@ -193,8 +194,10 @@ Vercel serverless route (nodejs runtime)
 
 ---
 
-## 11. Remaining open items
+## 11. Resolved open items
 
-1. **Final project/team name** — "Krishi Sathi (कृषि साथी)" is a placeholder for
-   the title slide, repo, and README; confirm or replace.
-2. **Google AI Studio API key** — prerequisite for the MVP phase (never committed).
+1. **Final project/team name** — ✅ "Krishi Sathi (कृषि साथी)" confirmed
+   (2026-10-15) for the title slide, repo, and README.
+2. **Google AI Studio API key** — ✅ added to `.env.local` (2026-10-15) and the
+   route verified against the live API; still to be set in the Vercel dashboard
+   (Phase 7). Never committed.

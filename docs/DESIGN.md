@@ -291,7 +291,9 @@ forwarded), so the key is not client-spoofable in production — locally every
 client shares one bucket; advisory text lives only in server code, never in the
 model prompt output.
 
-Localized server strings (`lang: "hi" | "en"`):
+Localized strings (`lang: "hi" | "en"`). The route sends only **Refusal** (as
+the refusal `token`) and **Advisory** (inside `done`); the other three are
+client-owned (`lib/ui-strings.ts`) and never travel on the wire:
 
 | String | hi | en |
 |---|---|---|
@@ -349,8 +351,8 @@ above. `lib/ui-strings.ts` is the source of truth; this table mirrors it.
 | `deleteEntry` | इतिहास से हटाएँ | Delete from history |
 | `reopen` | फिर से खोलें | Reopen |
 
-`upstreamNote`, `rateLimitToast`, and `offlineToast` are the doc/server strings
-listed in the table above; the client renders their **server-sent** value.
+`upstreamNote`, `rateLimitToast`, and `offlineToast` live in `lib/ui-strings.ts`
+and are rendered directly by the client — the route never sends them.
 
 ### Suggested questions (`CHIPS`, FR3)
 
@@ -379,7 +381,7 @@ all seven answerable chips retrieve a chunk and that #8 does not.
 |---|---|---|
 | Messages (session) | React state (`useState`) | reset on refresh; `ChatMessage` in `lib/chat.ts` |
 | Streaming partial | React state (per message) | tokens appended live; one `AbortController` for the active request |
-| **Thinking state** | derived: `status === "streaming" && text === ""` | the assistant bubble shows a spinner + **"सोच रहा हूँ…"** from send until the first token arrives (the pinned model thinks for 15–33 s). The `sources` accordion can already be on screen while this is showing, which is the whole point of emitting `sources` first |
+| **Thinking state** | derived: `status === "streaming" && text === ""` | the assistant bubble shows a spinner + **"सोच रहा हूँ…"** from send until the first token arrives (with `thinkingLevel: "minimal"` the first token usually lands in ~3–5 s). The `sources` accordion can already be on screen while this is showing, which is the whole point of emitting `sources` first |
 | Draft question | React state (`useState`) | cleared on send; truncated to 500 chars client-side as well |
 | `lang` | `useSyncExternalStore` over localStorage `ks:lang` | Hindi default; the document `lang` mirrors it |
 | Capability (TTS / voice) | `useSyncExternalStore` probe (`useCapability`) | `null` on the server and the first hydration pass, then a real boolean — no effect, no `setState` |

@@ -125,11 +125,16 @@ eval pass-rate <80%, tune weights/threshold (don't add embeddings).
 7. `@google/genai` `generateContentStream`: `gemma-4-26b-a4b-it`, temp 0.3,
    `maxOutputTokens` 2048, 55 s in-route deadline + `maxDuration = 60`.
    **Verified constraints:** this model rejects `config.systemInstruction` (so the
-   rules go in `contents`), and `thinkingConfig.thinkingBudget` is unsupported, so
-   thinking cannot be capped and real answers take **15–33 s**. Thinking tokens are
-   charged to `maxOutputTokens`. Retry up to 4 attempts, but only while no `token`
-   has been streamed and the deadline still allows it (the model returns fast 5xx
-   intermittently — reproducible with the plain SDK, so not a bundling issue).
+   rules go in `contents`), and `thinkingConfig.thinkingBudget` is unsupported.
+   Thinking tokens are charged to `maxOutputTokens`. Retry up to 4 attempts, but
+   only while no `token` has been streamed and the deadline still allows it (the
+   model returns fast 5xx intermittently — reproducible with the plain SDK, so not
+   a bundling issue).
+   > *Update 2026-10-16:* thinking is **not** uncappable —
+   > `thinkingLevel: "minimal"` **is** accepted (LOW/MEDIUM/HIGH and
+   > `thinkingBudget` return 400). The route now sets it, taking a real answer
+   > from **15–33 s** to **~3–5 s** with citations and the refusal intact
+   > (DESIGN §5).
 8. NDJSON response assembly per DESIGN §5: `sources` → `token`* → `done`
    (sources **first**, so the snippet-fallback card has content if the model
    fails; localized advisory in `done`); upstream failure → single
@@ -281,6 +286,7 @@ deploy name availability → have a fallback name ready.
 | 5 Dashboard & history | ✅ done | 2026-10-15 | `lib/hooks/useLocalStorage.ts` (SSR-safe `useSyncExternalStore` store, versioned `ks:history:v1` / `ks:impact:v1`, try/catch + in-memory fallback); `components/DashboardModal.tsx` (two tabs, counters, KB coverage `5 फसलें · 14 दस्तावेज़ · 2 भाषाएँ` from bundled `lib/kb.ts`, history cap 50 / ✖ / सब हटाएँ / click-to-reopen, role=dialog + Esc + backdrop + focus return + Tab trap + scroll lock); `ChatHeader` button un-disabled; counters + history wired into `send()` incl. the refusal path; client-only helpers in `lib/chat.ts`; 16 new UI strings × hi/en (removed dead `dashboardSoon`). **Verified in Chrome (390 px iframe + desktop):** asked/answered/refused 0/0/0 → chip #1 gave 1/1/0 (20.5 s) → chip #8 gave **2/1/1** with `refused:true`, `sources:[]`; survived a refresh (2/1/1 + "पिछला सवाल: 15 अक्टू॰"); seeded 50 + 1 refusal kept **50** with the oldest dropped; per-item ✖ 50→49; "सब हटाएँ" → `[]` + empty state; click-to-reopen restored the Q&A with 3 KB sources and **zero** `/api/ask` calls; `window.localStorage` replaced with a throwing getter → dashboard still rendered 0/0/0 with no console error; modal at 390×844 = 390 wide, no horizontal overflow. grep: only `/api/ask` + `/api/health`; lint + 12/12 tests + `next build` green |
 | 6 Integration & polish | ✅ done | 2026-10-15 | E2E pass of FR1–FR14 in Chrome (desktop + 390 px iframe); security headers in `next.config.ts` (CSP without nonces, `nosniff`, `X-Frame-Options: SAMEORIGIN`) verified on `next start`; a11y pass (one global `:focus-visible` ring, `lang` on toasts, `aria-label` on source accordions); `npm audit --omit=dev` = **0** (full = 5 high, one dev-only `braces` chain, no patch — B6); PWA manifest finalised (SVG + 192/512 + maskable 512 + `app/apple-icon.png`); dead code removed (`getMeta`, `scoreChunk`); missing-key path now emits `sources` before `error` (FR10). **Failure drills:** no-key + bad-key → friendly amber snippet card (3 sources + retry, no technical wording), offline → red toast, 429 → amber toast from a **real** 429. **12/12 tests, lint + `next build` green** |
 | — Hardening (pre-deploy) | ✅ done | 2026-10-16 | `pre-production-checklist.md` (85-item evidence-based audit + go/no-go) written, then the in-repo gating items closed: error/global-error/not-found pages; `<main>` landmark + contrast pass (`--primary` green-600→green-700, `--muted` stone-500→stone-600, header amber stop amber-500→amber-700) taking **Lighthouse a11y 0.94 → 1.0**; HSTS + `Referrer-Policy` + `Permissions-Policy` (`microphone=(self)`) + `poweredByHeader:false`; Node pin (`engines` + `.nvmrc` 22). **12/12 tests, 23/23 smoke, lint + build green.** Deploy-dependent items (B3/B4/B6/B7/B8) remain in Phase 7 |
+| — Perf + retrieval hardening | ✅ done | 2026-10-16 | (a) `thinkingLevel: "minimal"` caps thinking → answers **~3–5 s** (was 15–33 s); (b) rate-limit key prefers Vercel's proxy-proof `x-vercel-forwarded-for`; (c) icons regenerated from `public/Logo.png` + iOS install meta + reduced-motion; (d) synonym table broadened (Roman-Hindi + spelling variants: `khaad`, `gehoon`, `dhaan`, `rai`, `gerua`, `बुआई`, …); (e) **pre-scoring non-goal guard** (`isOutOfScope`) so price/scheme/loan/weather questions refuse instead of leaking an answer; evals now **38 hits + 8 refusals**. **13/13 tests, lint + build green** |
 | 7 Deploy & repo finish | ⬜ not started | — | needs B2 |
 
 Legend: ⬜ not started · 🔄 in progress · ✅ done (criteria verified) · ⛔ blocked
@@ -314,6 +320,22 @@ Legend: ⬜ not started · 🔄 in progress · ✅ done (criteria verified) · �
   `camera=()…`-style lockdown would silently break the Web Speech voice input;
   (3) green-600 fails AA both as text on cream (3.08:1) and as a bubble behind
   white text (3.30:1), so one token change to green-700 fixes both.
+- 2026-10-16 · Perf + retrieval hardening · Capped thinking with
+  `thinkingLevel: "minimal"` (verified live: first token 3.8 s, total 5.2 s,
+  citations + off-KB refusal intact), hardened the rate-limit key to prefer
+  Vercel's platform-set `x-vercel-forwarded-for`, broadened the synonym table
+  (Roman-Hindi + spelling variants), and added a **pre-scoring non-goal guard**
+  (`isOutOfScope` in `lib/retrieval.ts`) so a market-price / scheme / loan /
+  weather question that also contains an in-KB topic word ("खाद की कीमत") refuses
+  instead of leaking fertiliser advice · Learned: (1) `thinkingBudget` and the
+  LOW/MEDIUM/HIGH levels are rejected, but `thinkingLevel: "minimal"` **is**
+  accepted — the one value that skips thinking; (2) a naive out-of-scope check on
+  the bare word "rate" would break the in-KB "seed rate" / "बीज दर" topic, so that
+  phrase is scrubbed before the check; (3) adding the Roman alias `khaad` without
+  the guard would have *widened* the existing price-question leak, so the guard
+  and the alias ship together; (4) the separate "out-of-KB crop + in-KB topic"
+  case ("टमाटर में खाद कब डालें" → fertiliser advice) needs crop gating and is
+  recorded as open rather than silently fixed.
 
 ## Blockers
 
