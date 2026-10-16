@@ -2,8 +2,9 @@ import type { MetadataRoute } from "next";
 
 /**
  * PWA manifest (FR13). Colours mirror the design tokens in docs/DESIGN.md §2.
- * Icons: the scalable SVG plus raster 192/512 PNGs (Chrome's installability
- * requirement) and a maskable 512 for Android adaptive icons. iOS uses the
+ * Icons are raster PNGs derived from `public/Logo.png` by
+ * `scripts/generate-icons.mjs`: 192/512 (Chrome's installability requirement)
+ * and a maskable 512 for Android adaptive icons. iOS uses the
  * `app/apple-icon.png` file convention.
  */
 export default function manifest(): MetadataRoute.Manifest {
@@ -23,12 +24,6 @@ export default function manifest(): MetadataRoute.Manifest {
     dir: "ltr",
     categories: ["agriculture", "education"],
     icons: [
-      {
-        src: "/icon.svg",
-        sizes: "any",
-        type: "image/svg+xml",
-        purpose: "any",
-      },
       {
         src: "/icon-192.png",
         sizes: "192x192",

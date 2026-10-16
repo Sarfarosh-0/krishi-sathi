@@ -607,7 +607,7 @@
 - **Verification:** Check `/manifest.webmanifest` (200), icons 192/512 + maskable, and installability criteria.
 - **Priority:** Medium
 - **Status:** ✅ Passed (with a gap for iOS)
-- **Evidence or Notes:** Manifest returns 200 with id/scope/display/orientation/theme; SVG + 192/512 + maskable 512 present; icons return 200. **Gap:** no `apple-mobile-web-app-capable` meta (DOM probe `appleWebApp=false`) → iOS full-screen install experience is degraded. **No service worker** → no offline caching (installability on Chrome/Android is unaffected).
+- **Evidence or Notes:** Manifest returns 200 with id/scope/display/orientation/theme; PNG icons 192/512 + maskable 512 present (regenerated from `public/Logo.png` by `scripts/generate-icons.mjs`, 2026-10-16); icons return 200. **Gap:** no `apple-mobile-web-app-capable` meta (DOM probe `appleWebApp=false`) → iOS full-screen install experience is degraded. **No service worker** → no offline caching (installability on Chrome/Android is unaffected).
 
 ---
 

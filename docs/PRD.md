@@ -87,7 +87,7 @@ models, no database, no tracking.
 | FR10 | Fallback: on API timeout/429/5xx show retrieved KB snippets + friendly message, never a crash | Must |
 | FR11 | Client + server rate limit (10 req/min/IP) | Must |
 | FR12 | Dashboard: device-local impact counter + question history (localStorage, cap 50, clear-all) | Should |
-| FR13 | PWA manifest (installable, home-screen; SVG + 192/512 PNG + maskable 512 + iOS `apple-icon`) | Should |
+| FR13 | PWA manifest (installable, home-screen; PNG 192/512 + maskable 512 + PNG favicon + iOS `apple-icon`, all derived from the logo) | Should |
 | FR14 | Light markdown rendering of answers (bold, bullets — text nodes only) | Could |
 | FR15 | Seasonal tip banner / crop dropdown / dark mode | Could (stretch) |
 

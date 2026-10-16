@@ -1,7 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 192" width="192" height="192">
-  <title>कृषि साथी / Krishi Sathi</title>
-  <rect width="192" height="192" rx="36" fill="#16A34A" />
-  <path d="M96 44c30 12 46 36 46 62 0 26-20 42-46 42s-46-16-46-42c0-26 16-50 46-62Z" fill="#FAF7F2" />
-  <path d="M96 62v72" stroke="#15803D" stroke-width="8" stroke-linecap="round" />
-  <path d="M96 96 72 80M96 116l24-16" stroke="#F59E0B" stroke-width="8" stroke-linecap="round" />
-</svg>
