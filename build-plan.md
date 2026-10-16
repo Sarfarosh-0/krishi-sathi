@@ -289,6 +289,7 @@ deploy name availability → have a fallback name ready.
 | — Perf + retrieval hardening | ✅ done | 2026-10-16 | (a) `thinkingLevel: "minimal"` caps thinking → answers **~3–5 s** (was 15–33 s); (b) rate-limit key prefers Vercel's proxy-proof `x-vercel-forwarded-for`; (c) icons regenerated from `public/Logo.png` + iOS install meta + reduced-motion; (d) synonym table broadened (Roman-Hindi + spelling variants: `khaad`, `gehoon`, `dhaan`, `rai`, `gerua`, `बुआई`, …); (e) **pre-scoring non-goal guard** (`isOutOfScope`) so price/scheme/loan/weather questions refuse instead of leaking an answer; evals now **38 hits + 8 refusals**. **13/13 tests, lint + build green** |
 | — Answer skeleton loader | ✅ done | 2026-10-16 | `components/AnswerSkeleton.tsx` (three `animate-pulse` bars on the `muted` token; decorative, with the localized "सोच रहा हूँ…" as `sr-only` status) replaces the spinner in `MessageBubble` while `status === "streaming" && text === ""`; the streaming answer carries the same `min-h-[4.5rem]` reserve so the skeleton→first-token swap does not shift layout. **Verified in a live browser with a mocked NDJSON stream:** skeleton 190 px (3 pulses) → one-word answer 190 px (1 caret pulse, no shift); rejection → upstream card + retry, 0 pulses; chip #8 → amber refusal + advisory, 0 pulses. **13/13 tests, lint + build green** |
 | — Header brand logo | ✅ done | 2026-10-16 | `ChatHeader` shows the provided `public/Logo.png` (Next `<Image>`, `size-9`, `rounded-full bg-surface`, `priority`, `alt=""`) in place of the Lucide `Sprout` stand-in; the near-white plate reads as an app-icon badge on the gradient. **Verified in a live browser:** the optimized image loads and is 36×36; lint + build green |
+| — Dashboard delete + count | ✅ done | 2026-10-16 | History tab gains a live **कुल प्रविष्टियाँ** count *derived* from the `history` array (no second counter to drift) and per-item ✖ now opens `components/ConfirmDialog.tsx` (`role="alertdialog"`, Cancel/Esc/backdrop all cancel, only **हटाएँ** deletes). New strings: `historyCountLabel`, `cancel`, `delete`, `deleteConfirmTitle`, `deleteConfirmBody`. **Verified in a live browser:** ✖ → dialog with the exact question, list + count unchanged; Cancel/Esc/backdrop close it and restore focus to the ✖; Delete removes the row and the count drops **2 → 1 in the same render** (localStorage agrees); Tab trapped in the dialog; dashboard stays open on cancel; clear-all unchanged. **13/13 tests, lint + build green** |
 | 7 Deploy & repo finish | ⬜ not started | — | needs B2 |
 
 Legend: ⬜ not started · 🔄 in progress · ✅ done (criteria verified) · ⛔ blocked
@@ -360,6 +361,26 @@ Legend: ⬜ not started · 🔄 in progress · ✅ done (criteria verified) · �
   badge. Next `<Image>` (not a bare `<img>`) keeps `eslint-config-next` clean and
   sets width/height to avoid CLS; the optimizer serves a 96×96 PNG (~3 KB) for
   the 36 px slot.
+- 2026-10-16 · Dashboard delete + count · Gave the history tab a live **कुल
+  प्रविष्टियाँ** count and put a confirmation in front of per-item delete
+  (`components/ConfirmDialog.tsx`, `role="alertdialog"`); new strings
+  `historyCountLabel` / `cancel` / `delete` / `deleteConfirmTitle` /
+  `deleteConfirmBody`; DESIGN §1.3/§3/§5/§6/§7 + PRD FR12/§5 synced · Learned:
+  (1) the list delete was **already** synchronous — a live probe showed 3→2 rows
+  and 3→2 in `localStorage` with no reload, so the real gap was that the
+  dashboard had no *history* count at all; the impact counters are cumulative by
+  design (PRD FR12 / "questions asked from this device") and must **not** shrink
+  on delete, so the fix is a count read straight off the `history` array rather
+  than a second counter to keep in sync; (2) a nested dialog needs an explicit
+  keyboard hand-off — the dashboard's document-level Esc/Tab handler stands down
+  while `pendingDelete` is set, `ConfirmDialog` traps Tab on its own panel, and
+  the dashboard panel goes `aria-hidden` behind it; (3) the confirmation lives
+  inside the dashboard overlay, so its backdrop click must `stopPropagation` or
+  cancelling would also close the dashboard (the dashboard overlay's own
+  `onClick={onClose}` would fire); (4) focus is restored to the exact ✖ that
+  opened the dialog on cancel, and to the close button after a successful delete
+  (the row no longer exists); (5) white on `--danger` (#dc2626) is ~4.8:1, so the
+  destructive button passes AA without a token change.
 
 ## Blockers
 

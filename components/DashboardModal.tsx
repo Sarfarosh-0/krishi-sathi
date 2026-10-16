@@ -5,6 +5,7 @@ import { X } from "lucide-react";
 import { getChunks } from "@/lib/kb";
 import type { HistoryEntry, ImpactStats, Lang } from "@/lib/types";
 import type { UIStrings } from "@/lib/ui-strings";
+import ConfirmDialog from "./ConfirmDialog";
 
 interface DashboardModalProps {
   /** Current UI language (chrome copy + label language). */
@@ -43,9 +44,15 @@ function formatDay(ts: number, lang: Lang): string {
  * coverage, honestly labelled "from this device") and a history tab (cap 50,
  * per-item delete, clear-all, click-to-reopen). Zero network calls.
  *
+ * The history tab shows a live count derived from `history` itself, so it can
+ * never drift from the list — deleting an entry drops the count immediately.
+ * Per-item delete is gated behind `ConfirmDialog`; nothing is removed until the
+ * user confirms.
+ *
  * a11y: role=dialog + aria-modal, Esc closes, backdrop click closes, focus
  * moves in on open and back to the trigger on close, Tab is trapped, and the
- * page behind is frozen.
+ * page behind is frozen. While the confirmation is open it owns the keyboard,
+ * and the dashboard panel is hidden from assistive tech.
  */
 export default function DashboardModal({
   lang,
@@ -58,8 +65,12 @@ export default function DashboardModal({
   onReopen,
 }: DashboardModalProps) {
   const [tab, setTab] = useState<Tab>("impact");
+  // The entry awaiting delete confirmation, or null when none is pending.
+  const [pendingDelete, setPendingDelete] = useState<HistoryEntry | null>(null);
   const panelRef = useRef<HTMLDivElement>(null);
   const closeRef = useRef<HTMLButtonElement>(null);
+  // The delete button that opened the confirmation, so focus can return to it.
+  const deleteTriggerRef = useRef<HTMLElement | null>(null);
 
   // Focus moves into the dialog as soon as it opens.
   useEffect(() => {
@@ -67,8 +78,12 @@ export default function DashboardModal({
   }, []);
 
   // Esc closes; Tab cycles inside the dialog (no setState here — a11y only).
+  // While the confirmation is open it handles its own Esc/Tab, so we stand down.
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
+      if (pendingDelete) {
+        return;
+      }
       if (event.key === "Escape") {
         event.preventDefault();
         onClose();
@@ -102,7 +117,7 @@ export default function DashboardModal({
     };
     document.addEventListener("keydown", onKeyDown);
     return () => document.removeEventListener("keydown", onKeyDown);
-  }, [onClose]);
+  }, [onClose, pendingDelete]);
 
   // Stop the page behind the modal from scrolling.
   useEffect(() => {
@@ -143,6 +158,7 @@ export default function DashboardModal({
         role="dialog"
         aria-modal="true"
         aria-labelledby={TITLE_ID}
+        aria-hidden={pendingDelete ? true : undefined}
         onClick={(event) => event.stopPropagation()}
         className="flex max-h-[92dvh] w-full max-w-lg flex-col rounded-t-card bg-surface shadow-card sm:rounded-card"
       >
@@ -233,6 +249,19 @@ export default function DashboardModal({
               aria-labelledby={TAB_ID.history}
               className="space-y-3"
             >
+              {/* Live count derived from `history` itself, so it can never drift
+                  from the list — deleting an entry drops it immediately. */}
+              <div className="flex items-center justify-between">
+                <span lang={lang} className="text-sm font-semibold text-ink">
+                  {strings.historyCountLabel}
+                </span>
+                <span
+                  className="rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-bold text-primary"
+                >
+                  {history.length}
+                </span>
+              </div>
+
               {history.length === 0 ? (
                 <p lang={lang} className="py-6 text-center text-sm text-muted">
                   {strings.historyEmpty}
@@ -257,7 +286,10 @@ export default function DashboardModal({
                       <button
                         type="button"
                         lang={lang}
-                        onClick={() => onDelete(entry.id)}
+                        onClick={(event) => {
+                          deleteTriggerRef.current = event.currentTarget;
+                          setPendingDelete(entry);
+                        }}
                         aria-label={`${strings.deleteEntry}: ${entry.q}`}
                         className="flex w-11 shrink-0 items-center justify-center rounded-r-card text-muted hover:bg-danger/10 hover:text-danger"
                       >
@@ -282,6 +314,28 @@ export default function DashboardModal({
           )}
         </div>
       </div>
+
+      {pendingDelete && (
+        <ConfirmDialog
+          lang={lang}
+          strings={strings}
+          title={strings.deleteConfirmTitle}
+          description={strings.deleteConfirmBody}
+          detail={pendingDelete.q}
+          confirmLabel={strings.delete}
+          onConfirm={() => {
+            onDelete(pendingDelete.id);
+            setPendingDelete(null);
+            // The row is gone — land focus on a stable control.
+            closeRef.current?.focus();
+          }}
+          onCancel={() => {
+            setPendingDelete(null);
+            // Nothing was deleted, so return focus to the trigger.
+            deleteTriggerRef.current?.focus();
+          }}
+        />
+      )}
     </div>
   );
 }

@@ -59,17 +59,28 @@ only for demo flair; surfaces stay solid.
 │  ज्ञान कक्षा: 5 फसलें · 14 दस्तावेज़ · 2 भाषाएँ             │
 │  (सभी आँकड़े इसी डिवाइस से — कोई डेटा बाहर नहीं जाता)       │
 │                                                              │
-│  इतिहास:                                                     │
+│  कुल प्रविष्टियाँ                                     [2]    │
 │  ┌ 12 Oct · गेहूँ में पीली इल्टी…            [✖] ┐          │
 │  ┌ 12 Oct · सरसों में खाद कब…                [✖] ┐          │
 │                                          [सब हटाएँ]         │
+└──────────────────────────────────────────────────────────────┘
+
+[✖] opens a confirmation (role=alertdialog, layered above the dashboard):
+┌─ इतिहास से हटाएँ? ──────────────────────────────────────────┐
+│ ⚠  यह सवाल और इसका जवाब इतिहास से हटा दिया जाएगा।          │
+│    इसे वापस नहीं लाया जा सकता।                               │
+│    ┌ गेहूँ में पीली इल्टी का इलाज क्या है? ┐                 │
+│                                  [रद्द करें]  [हटाएँ]        │
 └──────────────────────────────────────────────────────────────┘
 ```
 
 Implemented in Phase 5 (`components/DashboardModal.tsx`): the tab row, the three
 counters, the last-question date, and `ज्ञान कक्षा: 5 फसलें · 14 दस्तावेज़ ·
 2 भाषाएँ` all match this sketch, with the "कोई डेटा बाहर नहीं जाता" line beneath.
-On phones the panel is a bottom sheet at full width.
+On phones the panel is a bottom sheet at full width. The history tab's live
+**कुल प्रविष्टियाँ** count is derived from `history` itself (so it can never drift
+from the list), and each **✖** opens `components/ConfirmDialog.tsx` before
+anything is removed.
 
 ### 1.4 Mobile (< 768px)
 Same single column at full width; chips scroll; composer fixed to bottom with
@@ -133,6 +144,7 @@ app/page.tsx                    (client) composition + streaming orchestration
 ├─ Composer                     Mic button, textarea, Send ⇄ Stop
 ├─ Toast                        offline / rate-limit notices (role="status")
 └─ DashboardModal               modality + tabs: device-local impact + history (FR12)
+   └─ ConfirmDialog             per-item delete confirmation (role="alertdialog")
 
 lib/
 ├─ retrieval.ts                 scoring (pure, unit-tested)
@@ -351,6 +363,11 @@ above. `lib/ui-strings.ts` is the source of truth; this table mirrors it.
 | `clearAll` | सब हटाएँ | Clear all |
 | `deleteEntry` | इतिहास से हटाएँ | Delete from history |
 | `reopen` | फिर से खोलें | Reopen |
+| `historyCountLabel` | कुल प्रविष्टियाँ | Total entries |
+| `cancel` | रद्द करें | Cancel |
+| `delete` | हटाएँ | Delete |
+| `deleteConfirmTitle` | इतिहास से हटाएँ? | Delete from history? |
+| `deleteConfirmBody` | यह सवाल और इसका जवाब इतिहास से हटा दिया जाएगा। इसे वापस नहीं लाया जा सकता। | This question and its answer will be removed from your history. This can't be undone. |
 
 `upstreamNote`, `rateLimitToast`, and `offlineToast` live in `lib/ui-strings.ts`
 and are rendered directly by the client — the route never sends them.
@@ -390,7 +407,8 @@ all seven answerable chips retrieve a chunk and that #8 does not.
 | Mic active | React state (`useVoiceInput`) | interim transcript is written into the textarea |
 | Toast | React state + 6 s timer | rate-limit (amber) / offline (danger) only |
 | Dashboard open | React state (`useState`) | modal visibility only — never persisted |
-| History / impact | `useLocalStorage` (`ks:history:v1`, `ks:impact:v1`) | versioned, cap 50 (newest first), try/catch + in-memory fallback, clear-all, per-item delete; **no analytics, no server storage** |
+| History / impact | `useLocalStorage` (`ks:history:v1`, `ks:impact:v1`) | versioned, cap 50 (newest first), try/catch + in-memory fallback, clear-all, per-item delete; **no analytics, no server storage**. The tab's **कुल प्रविष्टियाँ** count is *derived* from the `history` array (never a second copy), so it always matches the list |
+| Delete confirmation | React state (`useState`, the pending `HistoryEntry`) | which row is awaiting confirmation; `null` = none. Lives only while the dialog is open — nothing is persisted until Delete is pressed |
 | KB, synonyms, rate-limit counters | server (module scope) | never sent to client except top-3 sources |
 
 **No other state exists** — no global store, no server-side user data.
@@ -440,11 +458,23 @@ all seven answerable chips retrieve a chunk and that #8 does not.
 - **Dashboard (FR12):** the header button (no longer a stub) opens a modal with
   two tabs — **इस डिवाइस का प्रभाव** (asked / answered / refused counters, last
   question date, and KB coverage `crops · documents · languages` read from the
-  bundled KB) and **इतिहास** (newest-first list, cap 50, per-item ✖, "सब हटाएँ").
+  bundled KB) and **इतिहास** (newest-first list, cap 50, a live **कुल
+  प्रविष्टियाँ** count, per-item ✖, "सब हटाएँ").
   Every counter is honestly scoped to the device; the KB line carries the "कोई
   डेटा बाहर नहीं जाता" note. `asked` increments when a question is sent (even if
   the answer later fails); `answered` only on a non-empty `done`; `refused` only
-  on the refusal path — a refusal is asked + refused, never answered.
+  on the refusal path — a refusal is asked + refused, never answered. The
+  **कुल प्रविष्टियाँ** count is read straight off the `history` array, so
+  deleting a row drops it in the same render — no refresh, no separate counter to
+  keep in sync.
+  - **Delete confirmation:** the per-item ✖ never deletes on its own — it opens
+    `ConfirmDialog` (`role="alertdialog"`), which names the exact question being
+    removed and offers **रद्द करें** / **हटाएँ**. Cancel, Esc, and a backdrop
+    click all close it with nothing removed and return focus to the ✖; only
+    **हटाएँ** calls `onDelete`. The dialog owns the keyboard while it is open
+    (Tab is trapped inside it) and the dashboard panel is `aria-hidden` behind
+    it. A blocked `localStorage` write still updates in-memory state, so the
+    count stays truthful and the dialog always closes.
   - **History entry:** `{ id, q, answer, sources[], lang, ts, refused }` in
     localStorage. The server `done` advisory is stored **verbatim inside
     `answer`** (lib/types.ts is frozen and the client must not re-author server
@@ -456,7 +486,9 @@ all seven answerable chips retrieve a chunk and that #8 does not.
     dialog and back to the header button on close, Esc and backdrop-click close,
     Tab is trapped, and the page behind is scroll-locked. It is a bottom sheet
     on phones (`max-w-lg`, scrollable body, safe-area padding) and centered on
-    desktop.
+    desktop. While `ConfirmDialog` is open the dashboard hands the keyboard over
+    (Esc/Tab go to the confirmation) and the panel is `aria-hidden`, so assistive
+    tech sees only the confirmation.
 - **A11y:** labels on all icon buttons, one global `:focus-visible` ring
   (2px ink outline, 2px offset — `app/globals.css`), a `<main>` landmark around
   the transcript + composer, `aria-live="polite"` + `aria-busy` on the message

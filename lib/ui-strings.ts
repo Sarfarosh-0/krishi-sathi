@@ -50,6 +50,13 @@ export interface UIStrings {
   clearAll: string;
   deleteEntry: string;
   reopen: string;
+  historyCountLabel: string;
+  // Delete confirmation (FR12): explicit cancel/confirm before a destructive
+  // per-item delete (DESIGN §7).
+  cancel: string;
+  delete: string;
+  deleteConfirmTitle: string;
+  deleteConfirmBody: string;
   upstreamNote: string; // (DESIGN §5)
   rateLimitToast: string; // (DESIGN §5)
   offlineToast: string; // (DESIGN §5)
@@ -97,6 +104,12 @@ export const UI_STRINGS: Record<Lang, UIStrings> = {
     clearAll: "सब हटाएँ",
     deleteEntry: "इतिहास से हटाएँ",
     reopen: "फिर से खोलें",
+    historyCountLabel: "कुल प्रविष्टियाँ",
+    cancel: "रद्द करें",
+    delete: "हटाएँ",
+    deleteConfirmTitle: "इतिहास से हटाएँ?",
+    deleteConfirmBody:
+      "यह सवाल और इसका जवाब इतिहास से हटा दिया जाएगा। इसे वापस नहीं लाया जा सकता।",
     upstreamNote:
       "जवाब तैयार नहीं हो सका। नीचे ज्ञान-कोश से मिली जानकारी दी गई है।",
     rateLimitToast: "थोड़ा रुकिए, फिर कोशिश करें।",
@@ -143,6 +156,12 @@ export const UI_STRINGS: Record<Lang, UIStrings> = {
     clearAll: "Clear all",
     deleteEntry: "Delete from history",
     reopen: "Reopen",
+    historyCountLabel: "Total entries",
+    cancel: "Cancel",
+    delete: "Delete",
+    deleteConfirmTitle: "Delete from history?",
+    deleteConfirmBody:
+      "This question and its answer will be removed from your history. This can't be undone.",
     upstreamNote:
       "Could not generate an answer. Below is what I found in the knowledge base.",
     rateLimitToast: "Please wait a moment and try again.",

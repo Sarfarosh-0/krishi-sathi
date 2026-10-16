@@ -408,7 +408,7 @@
 - **Verification:** Review counter transitions; drive each terminal state.
 - **Priority:** Medium
 - **Status:** ✅ Passed
-- **Evidence or Notes:** `asked` on send; `answered` only on a non-empty `done`; `refused` on the refusal path only (`page.tsx` counter transitions). Verified in Phase 5 (chip #8 → asked 2 / answered 1 / refused 1).
+- **Evidence or Notes:** `asked` on send; `answered` only on a non-empty `done`; `refused` on the refusal path only (`page.tsx` counter transitions). Verified in Phase 5 (chip #8 → asked 2 / answered 1 / refused 1). The history tab's **कुल प्रविष्टियाँ** count is derived from the `history` array itself, so it cannot drift; per-item delete is confirmed first and drops the count in the same render (verified: 2 → 1 with `localStorage` agreeing).
 
 ### R7 — Health check / warm-up
 - [ ] **Requirement:** `GET /api/health` returns `200 {ok:true}`, is side-effect free, and invokes the function (not statically cached).
@@ -560,7 +560,7 @@
 - **Verification:** Tab/Shift+Tab/Esc through the app and the dashboard modal.
 - **Priority:** High
 - **Status:** ✅ Passed
-- **Evidence or Notes:** `DashboardModal` implements `role="dialog"`+`aria-modal`, Tab trap, Esc, backdrop close, scroll lock, and focus return (`page.tsx`). Visible focus ring is global (`app/globals.css`). Verified in Phase 5/6 (focus returned to the exact trigger).
+- **Evidence or Notes:** `DashboardModal` implements `role="dialog"`+`aria-modal`, Tab trap, Esc, backdrop close, scroll lock, and focus return (`page.tsx`). `ConfirmDialog` (`role="alertdialog"`) layers above it for per-item delete: the dashboard stands down on Esc/Tab while it is open, the dialog traps Tab, and focus returns to the exact ✖ on cancel (or the close button after a successful delete). Visible focus ring is global (`app/globals.css`). Verified in Phase 5/6 + the delete-confirmation pass (focus returned to the exact trigger; Esc/backdrop kept the dashboard open).
 
 ### U6 — Language attributes
 - [ ] **Requirement:** `lang` is correct on the document and on every text node, including past messages.

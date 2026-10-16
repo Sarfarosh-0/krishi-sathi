@@ -86,7 +86,7 @@ models, no database, no tracking.
 | FR9 | Voice input via Web Speech API (hi-IN) with fallback to typing | Must |
 | FR10 | Fallback: on API timeout/429/5xx show retrieved KB snippets + friendly message, never a crash | Must |
 | FR11 | Client + server rate limit (10 req/min/IP) | Must |
-| FR12 | Dashboard: device-local impact counter + question history (localStorage, cap 50, clear-all) | Should |
+| FR12 | Dashboard: device-local impact counter + question history (localStorage, cap 50, live count, confirmed per-item delete, clear-all) | Should |
 | FR13 | PWA manifest (installable, home-screen; PNG 192/512 + maskable 512 + PNG favicon + iOS `apple-icon`, all derived from the logo) | Should |
 | FR14 | Light markdown rendering of answers (bold, bullets — text nodes only) | Could |
 | FR15 | Seasonal tip banner / crop dropdown / dark mode | Could (stretch) |
@@ -177,7 +177,8 @@ supports local/edge deployment later.
 4. **No answer** — a distinct "no information" card: refusal message + KVK
    referral, shown calmly (not as an error).
 5. **Dashboard** — impact counter (*"questions asked from this device"*) and
-   scrollable history; clear-all button; no account, no cloud.
+   scrollable history with a live entry count; each row can be reopened or
+   deleted (after a confirmation), plus a clear-all button; no account, no cloud.
 
 **Edge cases handled:** empty input (send disabled), very long input (truncated),
 API down (snippet fallback), rate-limited (friendly Hindi notice), offline
